@@ -2,7 +2,9 @@
 
 Below are some screenshots from the `PlayKcal on IOS` 
 
-![Screenshot 1](./screenshots/1.jpg)
+
+<img src="./screenshots/1.jpg" alt="Screenshot 1" width="200" height="450" />
+
 
 Your nutrition sidekick that actually makes calorie tracking feel effortless. 🥗✨
 Stop guessing what's on your plate. PlayKcal helps you log meals, track calories, and understand your nutrition — all in one clean, simple app.
