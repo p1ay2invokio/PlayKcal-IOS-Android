@@ -187,6 +187,8 @@ const Dashboard = () => {
 
                                     router.push(`/product/${item.id}`)
                                 }} activeOpacity={0.9} className="w-full h-[110px] mb-5 p-2 flex flex-row gap-5 bg-white border rounded-[12px] border-gray-200 shadow">
+                                    
+                                    
                                     <View className="w-[30%] h-full rounded-xl bg-gray-100 flex justify-center items-center">
 
                                         {item.img ? <Image style={{ width: '100%', height: '100%', borderRadius: 12 }} source={{ uri: `${public_url}/foods/${item.img}` }}></Image> : <View className="flex justify-center items-center">
@@ -203,7 +205,7 @@ const Dashboard = () => {
                                         </View>
                                         <View className="flex flex-row gap-1 items-center">
                                             <Image style={{ width: 25, height: 25 }} source={require("../../../assets/images/fire.png")} className="w-full h-full object-cover" />
-                                            <Text className="font-[ebold] text-orange-600 text-xl">{item.calories} Kcal</Text>
+                                            <Text className={`font-[ebold] text-xl ${item.quantity <= 0 ? 'line-through text-gray-300' : 'text-orange-600'}`}>{item.calories} Kcal</Text>
                                         </View>
                                         <View className="flex flex-row gap-1">
                                             <View className="flex flex-row items-center">
