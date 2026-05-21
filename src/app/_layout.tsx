@@ -1,17 +1,13 @@
 import { Stack } from "expo-router";
 import '../../global.css'
 import { useFonts } from 'expo-font'
+import { useEffect } from "react";
+import * as SplashScreen from 'expo-splash-screen';
 
-import { router, Slot } from "expo-router";
-import { useEffect, useState } from "react";
-import cookie from '@react-native-async-storage/async-storage'
+SplashScreen.preventAutoHideAsync();
 
 export default function Layout() {
-
-
-    const [checked, setChecked] = useState(false);
-
-    let fonts = useFonts({
+    const [fontsLoaded, fontError] = useFonts({
         'light': require('../../assets/fonts/Kanit-Light.ttf'),
         'regular': require('../../assets/fonts/Kanit-Regular.ttf'),
         'medium': require('../../assets/fonts/Kanit-Medium.ttf'),
@@ -23,8 +19,17 @@ export default function Layout() {
         'emedium': require('../../assets/fonts/GoogleSans-Medium.ttf'),
         'esemibold': require('../../assets/fonts/GoogleSans-SemiBold.ttf'),
         'ebold': require('../../assets/fonts/GoogleSans-Bold.ttf'),
-    })
+    });
 
+    useEffect(() => {
+        if (fontsLoaded || fontError) {
+            SplashScreen.hideAsync();
+        }
+    }, [fontsLoaded, fontError]);
+
+    if (!fontsLoaded && !fontError) {
+        return null;
+    }
 
     return (
         <Stack>
@@ -34,7 +39,7 @@ export default function Layout() {
             <Stack.Screen name="personalized" options={{ headerShown: false }} />
             <Stack.Screen name="addItem" options={{ headerShown: false }} />
             <Stack.Screen name="scan" options={{ headerShown: false }} />
-            <Stack.Screen name="product/[id]" options={{ headerShown: false }} />
+            <Stack.Screen name="product/[id]" options={{ headerShown: false, gestureEnabled: false }} />
         </Stack>
     );
 }

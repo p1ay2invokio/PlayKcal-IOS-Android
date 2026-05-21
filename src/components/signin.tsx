@@ -123,12 +123,12 @@ const Signin = () => {
             </TouchableOpacity>
 
 
-            <TouchableOpacity onPress={() => {
+            {/* <TouchableOpacity onPress={() => {
                 console.log(sex, dob, fast, weight, height, goal, targetWeight)
             }} activeOpacity={0.7} className="w-[80%] flex-row gap-5 h-[50] rounded-xl border border-gray-300 flex justify-between px-14 items-center">
 
                 <Text className="text-gray-700 font-[ebold] text-xl">Check</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
         </View>
     )
 }
