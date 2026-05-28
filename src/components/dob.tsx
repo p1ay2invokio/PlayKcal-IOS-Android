@@ -36,12 +36,12 @@ const Dob = () => {
     return (
         <View className="flex-1 justify-center items-center bg-white">
 
-            <Text className="font-[ebold] text-gray-500">Date Of Birth</Text>
+            {/* <Text className="font-[medium] text-2xl text-gray-500">วันเกิดของคุณ</Text> */}
 
             <Animated.View className={'absolute flex justify-center items-center '} style={anihead}>
                 <Image style={{ width: 100, height: 100 }} source={require('../../assets/images/rabbit.png')} />
 
-                <Animated.Text className={'font-[mbold] text-4xl text-gray-600 mb-[-5px]'}>PLAYK<Text className="text-red-500">C</Text><Text className="text-emerald-600">A</Text><Text className="text-blue-400">L</Text></Animated.Text>
+                <Animated.Text className={'font-[mbold] text-4xl text-gray-600 mb-[-5px]'}>PLAY<Text className="text-amber-400">K</Text><Text className="text-red-500">C</Text><Text className="text-emerald-600">A</Text><Text className="text-blue-400">L</Text></Animated.Text>
                 <Animated.Text className={'text-md text-gray-400 font-[esemibold]'}>Track your calories</Animated.Text>
             </Animated.View>
 
@@ -55,16 +55,16 @@ const Dob = () => {
             <Animated.View className={'absolute bottom-60'}>
                 <TouchableOpacity onPress={() => {
                     nextPage()
-                }} activeOpacity={0.7} className="border border-gray-300 rounded-md">
-                    <Text className="font-[ebold] text-gray-500 text-2xl px-4 py-2">Get Started</Text>
+                }} activeOpacity={0.7} className=" bg-black rounded-2xl">
+                    <Text className="font-[ebold] text-white text-2xl px-4 py-2">Get Started</Text>
                 </TouchableOpacity>
             </Animated.View>
 
-            <Animated.View className={'absolute bottom-40'}>
+            <Animated.View className={'absolute top-15 right-8'}>
                 <TouchableOpacity onPress={() => {
-                    nextPage(7)
-                }} activeOpacity={0.7} className="border border-gray-300 rounded-md">
-                    <Text className="font-[ebold] text-gray-500 text-2xl px-4 py-2">I already have</Text>
+                    nextPage(5)
+                }} activeOpacity={0.7} className=" border-gray-300 rounded-md">
+                    <Text className="font-[ebold] text-gray-500 text-md px-3 rounded-2xl py-2 bg-black text-white">Login</Text>
                 </TouchableOpacity>
             </Animated.View>
         </View>

@@ -24,4 +24,16 @@ export class Food {
         })
         return data
     }
+
+
+    public manualAddFood = async (form: any, dailyLogId: any) => {
+
+        let transit = {
+            ...form,
+            dailyLogId: dailyLogId
+        }
+
+        let { data } = await axios.post(`${public_url}/api/manual/food`, transit)
+        return data
+    }
 }

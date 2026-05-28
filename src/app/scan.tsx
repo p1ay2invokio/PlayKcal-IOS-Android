@@ -1,54 +1,75 @@
 import { ActivityIndicator, TouchableOpacity, View } from "react-native"
 import { Camera, CameraView, CameraViewRef } from "expo-camera"
 import Icon from "@expo/vector-icons/Ionicons"
-import { use, useRef, useState } from "react"
+import { use, useEffect, useRef, useState } from "react"
 import { analysis_food } from "@/methods/gemini.method"
 import { router } from "expo-router"
 import Loading from "@/components/loading"
 import { useCurrentPickDate } from "@/stores/date.store"
 import dayjs from "dayjs"
+import { useAudioPlayer, setAudioModeAsync } from 'expo-audio';
+
+
+const audioSource = require('../../assets/sound/r1.mp3');
 
 const Scan = () => {
 
+
+    const player = useAudioPlayer(audioSource);
     let cameraRef = useRef<CameraView>(null)
-
-
     let [loading, setLoading] = useState(false)
+    let { currentDate } = useCurrentPickDate()
 
-    let {currentDate} = useCurrentPickDate()
+    useEffect(() => {
+        setAudioModeAsync({
+            playsInSilentMode: true
+        });
+    }, []);
 
+    useEffect(() => {
+        let timer: ReturnType<typeof setTimeout>;
+
+        const subscription = player.addListener('playbackStatusUpdate', (status) => {
+            if (status.didJustFinish && loading) {
+                timer = setTimeout(() => {
+                    player.seekTo(0);
+                    player.play();
+                }, 2000);
+            }
+        });
+
+        return () => {
+            subscription.remove();
+            if (timer) clearTimeout(timer);
+        };
+    }, [loading]);
 
     const takePicture = async () => {
         if (cameraRef.current) {
-
-
-            setLoading(true)
+            player.play();
+            setLoading(true);
 
             let photo = await cameraRef.current.takePictureAsync({
                 quality: 0.5,
                 base64: false,
                 exif: false
-            })
+            });
 
-
-            console.log(photo)
+            console.log(photo);
 
             if (photo) {
-
-
-                let convert_thai = dayjs(currentDate).format("DD-MM-YYYY")
-                
-                let res = await analysis_food(photo, convert_thai)
-
+                let convert_thai = dayjs(currentDate).format("DD-MM-YYYY");
+                let res = await analysis_food(photo, convert_thai);
 
                 if (res.statusCode === 201) {
-                    router.replace("/(tabs)/home")
-                    setLoading(false)
+                    player.pause();
+                    player.seekTo(0);
+                    router.replace("/(tabs)/home");
+                    setLoading(false);
                 }
             }
         }
-
-    }
+    };
 
     return (
         <View className="flex-1">

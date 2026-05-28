@@ -80,8 +80,8 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "อนุญาติ $(PRODUCT_NAME) เพื่อเปิดกล้อง",
-          "microphonePermission": "อนุญาติ $(PRODUCT_NAME) เพื่อเข้าถึงไมโครโฟน",
+          "cameraPermission": "Allow camera access to capture food images for AI calorie analysis.",
+          "microphonePermission": "Allow microphone access for audio recording.",
           "recordAudioAndroid": true,
           "barcodeScannerEnabled": true
         }
@@ -107,6 +107,14 @@
           "NSHealthShareUsageDescription": "Share your health data with us to provide you with better personalized experience",
           "NSHealthUpdateUsageDescription": "Update your health data to provide you with better personalized experience",
           "background": true
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone.",
+          "enableBackgroundPlayback": true,
+          "enableBackgroundRecording": false
         }
       ]
     ],

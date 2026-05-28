@@ -1,8 +1,11 @@
 import axios from "axios"
 import { CameraCapturedPicture } from 'expo-camera';
 import { public_url } from "../../config";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const analysis_food = async (image: CameraCapturedPicture, currentDate: string) => {
+
+    let token = await AsyncStorage.getItem("token")
 
     let formData = new FormData()
 
@@ -22,6 +25,7 @@ export const analysis_food = async (image: CameraCapturedPicture, currentDate: s
 
     let { data } = await axios.post(`${public_url}/api/food`, formData, {
         headers: {
+            "Authorization": `Bearer ${token}`,
             'Content-Type': 'multipart/form-data'
         }
     })

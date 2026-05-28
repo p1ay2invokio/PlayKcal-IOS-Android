@@ -40,6 +40,11 @@ export default function Layout() {
             <Stack.Screen name="addItem" options={{ headerShown: false }} />
             <Stack.Screen name="scan" options={{ headerShown: false }} />
             <Stack.Screen name="product/[id]" options={{ headerShown: false, gestureEnabled: false }} />
+            <Stack.Screen name="manual/[id]" options={{ headerShown: false, gestureEnabled: false }} />
+            <Stack.Screen name="exercise" options={{ headerShown: false, gestureEnabled: false }} />
+            <Stack.Screen name="ex/[id]" options={{ headerShown: false, gestureEnabled: false }} />
+            <Stack.Screen name="exm/[id]" options={{ headerShown: false, gestureEnabled: false }} />
+            <Stack.Screen name="editProfile" options={{ headerShown: false, gestureEnabled: false }} />
         </Stack>
     );
 }

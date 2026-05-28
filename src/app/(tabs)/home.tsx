@@ -1,10 +1,10 @@
-import { ScrollView, Text, Touchable, TouchableOpacity, View } from "react-native"
+import { Alert, ScrollView, Text, Touchable, TouchableOpacity, View } from "react-native"
 import GaugeCircle from "../../components/gaugecircle"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { Image } from "expo-image"
 import cookie from '@react-native-async-storage/async-storage'
-import { useEffect, useState } from "react"
-import { router, useRouter } from "expo-router"
+import { useCallback, useEffect, useState } from "react"
+import { router, useFocusEffect, useRouter } from "expo-router"
 import dayjs from 'dayjs'
 import { useMostRecentQuantitySample } from "@kingstinct/react-native-healthkit"
 import DatePicker from '@react-native-community/datetimepicker'
@@ -34,10 +34,10 @@ const Dashboard = () => {
 
     let [user, setUser] = useState<any>(null)
     let [selectDay, setSelectDay] = useState<any>(new Date())
-    let {currentDate, setCurrentDate} = useCurrentPickDate()
+    let { currentDate, setCurrentDate } = useCurrentPickDate()
 
 
-    useEffect(() => {
+    useFocusEffect(useCallback(() => {
         (async () => {
             let usr = new User()
             let token = await cookie.getItem("token")
@@ -50,11 +50,28 @@ const Dashboard = () => {
 
             let res = await usr.getDaily(convertDay)
 
-            setDetail(res.daily)
+            console.log("ED : ", res)
 
-            console.log(res)
+            if (res.daily.dailyCalories == 0 || res.daily.dailyCalories == null) {
+                Alert.alert("You have to set your perosnal first", '', [
+                    {
+                        text: "Setting",
+                        onPress() {
+                            navigate.push("/editProfile")
+                        }
+                    },
+                ])
+            } else {
+
+                console.log(res.daily)
+
+                setDetail(res.daily)
+            }
         })()
-    }, [currentDate])
+    }, [currentDate]))
+
+    const raw = ((dailyDetail.dailyCalories - dailyDetail.totalCalories + dailyDetail.totalBurned) / dailyDetail.dailyCalories) * 100;
+    const remain = Math.min(100, Math.max(0, raw));
 
     return (
         <SafeAreaView style={{ flex: 1, alignItems: 'center', backgroundColor: 'white' }}>
@@ -72,12 +89,12 @@ const Dashboard = () => {
                     </View>
 
 
-                    <View className="flex flex-row items-center gap-5">
-                        <TouchableOpacity activeOpacity={0.7} onPress={() => {
+                    <View className="flex flex-row items-center gap-2">
+                        <TouchableOpacity className="p-4 bg-slate-100 rounded-full" activeOpacity={0.7} onPress={() => {
                             opacity.value = withTiming(calendarModal ? 0 : 1, { duration: 200 })
                             setCalendarModal(!calendarModal)
                         }}>
-                            <Ionicons name="calendar" size={24} color="gray" />
+                            <Ionicons name="calendar" size={32} color="gray" />
                         </TouchableOpacity>
                         <TouchableOpacity activeOpacity={0.7} onPress={() => {
                             navigate.push("/(tabs)/setting")
@@ -102,7 +119,7 @@ const Dashboard = () => {
                     </View>
 
                     <View>
-                        <GaugeCircle size={90} value={(((dailyDetail.dailyCalories - dailyDetail.totalCalories) / dailyDetail.dailyCalories) * 100) < 0 ? 0 : (((dailyDetail.dailyCalories - dailyDetail.totalCalories) / dailyDetail.dailyCalories) * 100)} startAngle={-210} sweepAngle={240} strokeWidth={10} label={`${dailyDetail.dailyCalories - dailyDetail.totalCalories}`} color="#10b981"></GaugeCircle>
+                        <GaugeCircle size={90} value={remain} startAngle={-210} sweepAngle={240} strokeWidth={10} label={`${(dailyDetail.dailyCalories - dailyDetail.totalCalories) + dailyDetail.totalBurned}`} color="#10b981"></GaugeCircle>
                         <Text className="font-[emedium] text-gray-500 mt-[-10] text-[12px]">Remaining Kcal</Text>
                     </View>
 
@@ -179,6 +196,42 @@ const Dashboard = () => {
                     </View> : null} */}
 
                     <FlashList
+                        data={dailyDetail.exerciseLogs}
+                        renderItem={({ item }: any) => {
+                            return (
+                                <TouchableOpacity onPress={() => {
+                                    Haptic.impactAsync(Haptic.ImpactFeedbackStyle.Medium)
+
+                                    router.push(`/ex/${item.id}`)
+                                }} activeOpacity={0.9} className="w-full h-[110px] p-2 flex flex-row gap-5 bg-white border rounded-[12px] border-gray-200 shadow">
+
+
+                                    <View className="w-[30%] h-full rounded-xl bg-gray-100 flex justify-center items-center">
+
+                                        {item.img ? <Image style={{ width: '100%', height: '100%', borderRadius: 12 }} source={{ uri: `${public_url}/foods/${item.img}` }}></Image> : <View className="flex justify-center items-center">
+                                            <Ionicons name="code-working" size={40} color="#ccc" />
+                                            <Text className="text-sm text-center text-gray-500 font-[ebold]">Image Not Available</Text>
+                                        </View>
+                                        }
+
+                                    </View>
+                                    <View className="w-[calc(100%-36%)]">
+                                        <View className="flex flex-row items-center justify-between">
+                                            <Text className="text-lg font-[medium] text-gray-700 line-clamp-1 w-[160px]">{item.name}</Text>
+                                            <Text className="font-[ebold] text-sm text-gray-400">{dayjs(item.createdAt).format("HH:mm")}</Text>
+                                        </View>
+                                        <View className="flex flex-row gap-1 items-center">
+                                            <Image style={{ width: 25, height: 25 }} source={require("../../../assets/images/fire.png")} className="w-full h-full object-cover" />
+                                            <Text className={`font-[ebold] text-xl ${item.quantity <= 0 ? 'line-through text-gray-300' : 'text-orange-600'}`}>{item.caloriesBurned} Kcal</Text>
+                                        </View>
+                                    </View>
+                                </TouchableOpacity>
+                            )
+                        }}>
+
+                    </FlashList>
+
+                    <FlashList
                         data={dailyDetail.foodLogs}
                         renderItem={({ item }: any) => {
                             return (
@@ -187,8 +240,8 @@ const Dashboard = () => {
 
                                     router.push(`/product/${item.id}`)
                                 }} activeOpacity={0.9} className="w-full h-[110px] mb-5 p-2 flex flex-row gap-5 bg-white border rounded-[12px] border-gray-200 shadow">
-                                    
-                                    
+
+
                                     <View className="w-[30%] h-full rounded-xl bg-gray-100 flex justify-center items-center">
 
                                         {item.img ? <Image style={{ width: '100%', height: '100%', borderRadius: 12 }} source={{ uri: `${public_url}/foods/${item.img}` }}></Image> : <View className="flex justify-center items-center">
@@ -228,17 +281,17 @@ const Dashboard = () => {
 
                     </FlashList>
 
-
-
-                    {/* <View className="w-full h-[110px] bg-white border rounded-[12px] border-gray-200">
-
-                    </View> */}
                 </View>
             </ScrollView>
 
 
             <TouchableOpacity onPress={() => {
-                navigate.push("/addItem")
+                navigate.push({
+                    pathname: "/addItem",
+                    params: {
+                        dailyLogId: dailyDetail.id
+                    }
+                })
             }} className="w-[60px] h-[60px] flex justify-center items-center absolute bottom-30 rounded-full right-10 bg-linear-to-r from-purple-200 via-violet-400 to-indigo-600 shadow" activeOpacity={0.7}>
                 <Ionicons name="add" size={24} color="white" />
             </TouchableOpacity>

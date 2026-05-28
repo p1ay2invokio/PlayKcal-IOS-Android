@@ -210,10 +210,10 @@ const Product = () => {
                         }}
 
                         activeOpacity={0.85}
-                        className="w-[80%] rounded-2xl py-3 items-center justify-center bg-green-600/10 border-green-600 border absolute bottom-40"
+                        className="w-[80%] rounded-2xl py-3 items-center justify-center bg-purple-200 border border-purple-300 absolute bottom-40"
                     >
-                        <Text className="text-green-600 font-[ebold] text-base text-[20px] tracking-wide">
-                            Save Data
+                        <Text className="text-purple-500 font-[ebold] text-base text-[20px] tracking-wide">
+                            Update
                         </Text>
                     </TouchableOpacity>
 
@@ -222,9 +222,9 @@ const Product = () => {
                             router.back()
                         }}
                         activeOpacity={0.85}
-                        className="w-[80%] rounded-2xl py-3 items-center justify-center bg-orange-600/10 border-orange-600 border absolute bottom-20"
+                        className="w-[80%] rounded-2xl py-3 items-center justify-center bg-orange-600/10 border-orange-200 border absolute bottom-20"
                     >
-                        <Text className="text-orange-600 font-[ebold] text-base text-[20px] tracking-wide">
+                        <Text className="text-orange-500 font-[ebold] text-base text-[20px] tracking-wide">
                             Cancel
                         </Text>
                     </TouchableOpacity>
