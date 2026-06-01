@@ -46,7 +46,7 @@ const Dob = () => {
             </Animated.View>
 
             <Animated.View style={anitimer}>
-                <DatePicker display="spinner" mode="date" value={new Date(dob)} onChange={(e, selectedDate: any) => {
+                <DatePicker maximumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 15))} display="spinner" mode="date" value={new Date(dob)} onChange={(e, selectedDate: any) => {
                     // console.log("Date changed : ", text.nativeEvent.timestamp)
                     setDob(selectedDate.toISOString())
                 }}></DatePicker>

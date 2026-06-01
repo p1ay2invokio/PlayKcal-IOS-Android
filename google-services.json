@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "281678414726",
+    "project_id": "playkcal-cf80e",
+    "storage_bucket": "playkcal-cf80e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:281678414726:android:cdcdb4a991344d29d2a207",
+        "android_client_info": {
+          "package_name": "com.boonmata.playkcal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB08nMXRf7YOigaWG0jCXpQ0oj_PGNfENg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

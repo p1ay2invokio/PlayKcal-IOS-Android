@@ -3,6 +3,7 @@ import Slider from '@react-native-community/slider'
 import Animated from "react-native-reanimated"
 import { useMeasureStore } from "@/stores/measure.store"
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { Link } from "expo-router";
 
 const Fast = () => {
 
@@ -42,6 +43,9 @@ const Fast = () => {
                     <Text className="font-[ebold] text-white text-2xl px-4 py-2">Start the journey</Text>
                 </TouchableOpacity>
             </Animated.View>
+
+
+            <Text className="font-[eregular] text-center text-gray-500 absolute bottom-10">Estimate based on Wishnofsky's Rule. {"\n"}Calculations are for educational purposes only.{"\n"} Sources: Wishnofsky M. (1958), Mayo Clinic. {"\n"}<Link style={{ color: 'green' }} href="https://www.mayoclinic.org/healthy-lifestyle/weight-loss/in-depth/calories/art-20048065">Open Link</Link></Text>
         </View>
     )
 }
