@@ -48,4 +48,20 @@ export class User {
         )
         return data
     }
+
+
+    public deleteAccount = async () => {
+        let token = await cookie.getItem('token')
+
+        console.log(`${public_url}/api/user`)
+
+        let { data } = await axios.delete(`${public_url}/api/user`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        )
+        return data
+    }
 }

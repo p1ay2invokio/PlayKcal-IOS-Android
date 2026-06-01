@@ -24,13 +24,21 @@ interface UserActions {
 type UserStore = UserState & UserActions;
 
 
+const getMaxDate = () => {
+    const date = new Date()
+    console.log("BEFORE : ", date.getFullYear())  // 2026
+    date.setFullYear(date.getFullYear() - 15)
+    console.log("AFTER : ", date.getFullYear())   // 2011
+    return date
+}
+
+
 export const useMeasureStore = create<UserStore>((set) => ({
     current: 0,
-    sex: null,
-    dob: new Date().toISOString(),
-    height: null,
-    weight: null,
-    targetWeight: null,
+    sex: 'male',
+    dob: getMaxDate().toISOString(),
+    height: 150,
+    weight: 40,
     fast: 300,
     setDob: (dob: any) => set({ dob: dob }),
     setSex: (sex: string) => set({ sex: sex }),
@@ -42,10 +50,10 @@ export const useMeasureStore = create<UserStore>((set) => ({
     setCurrent: (to: 0) => set({ current: to }),
     reset: () => set({
         current: 0,
-        sex: null,
-        dob: new Date().toISOString(),
-        height: null,
-        weight: null,
+        sex: 'male',
+        dob: getMaxDate().toISOString(),
+        height: 150,
+        weight: 40,
         fast: 300,
     })
 }))

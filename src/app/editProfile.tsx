@@ -233,7 +233,7 @@ export default function EditProfileScreen() {
 
                 <SectionLabel label="Date of birth" />
                 <View className="w-full flex justify-center items-center ml-[-10px]">
-                    <DatePicker mode="date" value={form.date} onChange={(t, d: any) => {
+                    <DatePicker maximumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 15))} mode="date" value={form.date} onChange={(t, d: any) => {
                         setForm({
                             ...form,
                             date: d

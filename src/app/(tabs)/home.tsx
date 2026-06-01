@@ -3,10 +3,10 @@ import GaugeCircle from "../../components/gaugecircle"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { Image } from "expo-image"
 import cookie from '@react-native-async-storage/async-storage'
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { router, useFocusEffect, useRouter } from "expo-router"
 import dayjs from 'dayjs'
-import { useMostRecentQuantitySample } from "@kingstinct/react-native-healthkit"
+import { useHealthkitAuthorization, useMostRecentQuantitySample, useStatisticsForQuantity } from "@kingstinct/react-native-healthkit"
 import DatePicker from '@react-native-community/datetimepicker'
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated"
@@ -16,6 +16,7 @@ import { jwtDecode } from 'jwt-decode'
 import { public_url } from "../../../config"
 import * as Haptic from 'expo-haptics'
 import { useCurrentPickDate } from "@/stores/date.store"
+import { Excercise } from "@/class/excercise.class"
 
 const Dashboard = () => {
 
@@ -24,8 +25,27 @@ const Dashboard = () => {
     let [calendarModal, setCalendarModal] = useState(false)
 
 
-    const kcal = useMostRecentQuantitySample('HKQuantityTypeIdentifierActiveEnergyBurned')
-    const step = useMostRecentQuantitySample('HKQuantityTypeIdentifierStepCount')
+    const [authorizationStatus, requestAuthorization] = useHealthkitAuthorization({
+        toRead: ['HKQuantityTypeIdentifierActiveEnergyBurned', 'HKQuantityTypeIdentifierStepCount'],
+    })
+
+
+    const midnightToday = useRef((() => {
+        const d = new Date();
+        d.setHours(0, 0, 0, 0);
+        return d;
+    })()).current;
+    const now = useRef(new Date()).current;
+
+    let kcal: any = useStatisticsForQuantity('HKQuantityTypeIdentifierActiveEnergyBurned', ['cumulativeSum'], midnightToday, now, 'Cal')
+    let step: any = useStatisticsForQuantity('HKQuantityTypeIdentifierStepCount', ['cumulativeSum'], midnightToday, now, 'count')
+    let kcal_value: any = Math.floor(kcal?.sumQuantity?.quantity)
+    let step_value: any = step?.sumQuantity?.quantity
+
+    console.log("RENDER")
+
+
+    console.log("kcal: ", Math.floor(kcal?.sumQuantity?.quantity), "step: ", step?.sumQuantity?.quantity)
 
     let opacity = useSharedValue(0)
 
@@ -46,14 +66,18 @@ const Dashboard = () => {
 
             setUser(decoded)
 
+            let user_data = await usr.getUserData()
+
+            let age = dayjs().diff(user_data.dob, 'year')
+
             let convertDay = dayjs(currentDate).format("DD-MM-YYYY")
 
             let res = await usr.getDaily(convertDay)
 
             console.log("ED : ", res)
 
-            if (res.daily.dailyCalories == 0 || res.daily.dailyCalories == null) {
-                Alert.alert("You have to set your perosnal first", '', [
+            if (!user_data.weight || !user_data.height || !user_data.dob || !user_data.sex || !user_data.fast) {
+                Alert.alert("You have to set your personal information first", '', [
                     {
                         text: "Setting",
                         onPress() {
@@ -70,6 +94,24 @@ const Dashboard = () => {
         })()
     }, [currentDate]))
 
+    useEffect(() => {
+        if (!dailyDetail) return;
+        if (!kcal_value && !step_value) return; // รอให้มีค่าก่อน
+
+        (async () => {
+            let ex = new Excercise();
+
+            console.log("sending:", dailyDetail.id, typeof dailyDetail.id, kcal_value, typeof kcal_value, step_value, typeof step_value)
+
+            let apple_sync = await ex.updateAppleFitness(
+                dailyDetail.id,
+                kcal_value,
+                step_value
+            );
+            console.log(apple_sync);
+        })();
+    }, [dailyDetail, kcal_value, step_value]);
+
     const raw = ((dailyDetail.dailyCalories - dailyDetail.totalCalories + dailyDetail.totalBurned) / dailyDetail.dailyCalories) * 100;
     const remain = Math.min(100, Math.max(0, raw));
 
@@ -83,7 +125,7 @@ const Dashboard = () => {
                         <Image style={{ width: 60, height: 60 }} source={require("../../../assets/images/rabbit.png")} className="w-full h-full object-cover" />
                         <View>
                             <Text className="font-[mbold] text-2xl text-gray-600">PLAY<Text className="text-amber-500">K</Text><Text className="text-red-500">C</Text><Text className="text-emerald-600">A</Text><Text className="text-blue-400">L</Text></Text>
-                            <Text className="font-[mbold] text-md text-gray-600">calories deficiet</Text>
+                            <Text className="font-[mbold] text-md text-gray-600">calories deficit</Text>
                         </View>
 
                     </View>
@@ -119,14 +161,14 @@ const Dashboard = () => {
                     </View>
 
                     <View>
-                        <GaugeCircle size={90} value={remain} startAngle={-210} sweepAngle={240} strokeWidth={10} label={`${(dailyDetail.dailyCalories - dailyDetail.totalCalories) + dailyDetail.totalBurned}`} color="#10b981"></GaugeCircle>
+                        <GaugeCircle size={90} value={remain} startAngle={-210} sweepAngle={240} strokeWidth={10} label={`${(dailyDetail.dailyCalories - dailyDetail.totalCalories) + dailyDetail.totalBurned + dailyDetail.appleBurned}`} color="#10b981"></GaugeCircle>
                         <Text className="font-[emedium] text-gray-500 mt-[-10] text-[12px]">Remaining Kcal</Text>
                     </View>
 
 
                     <View className="flex justify-center items-center w-[80px]">
                         <Text className="font-[esemibold]">Burned</Text>
-                        <Text className="font-[esemibold]">{dailyDetail.totalBurned}</Text>
+                        <Text className="font-[esemibold]">{dailyDetail.totalBurned + dailyDetail.appleBurned}</Text>
                     </View>
                 </View>
 
@@ -175,11 +217,11 @@ const Dashboard = () => {
                 </View>
 
 
-                <View className="w-full bg-white px-7 py-3 gap-5">
+                <View className="w-full bg-white px-7 py-3">
 
-                    {/* {kcal && step ? <View className="w-full h-[110px] p-2 flex flex-row gap-5 bg-white border rounded-[12px] border-gray-200 shadow-sm">
+                    {authorizationStatus === 2 && dailyDetail.appleStep || dailyDetail.appleKcal ? <View className="w-full mb-2 h-[100px] p-2 flex flex-row gap-5 bg-white border rounded-[12px] border-gray-200">
                         <View className="w-[30%] h-full rounded-xl bg-transparent">
-                            <Image style={{ width: "100%", height: "100%", borderWidth: 1, borderColor: "#eee", borderRadius: 16 }} source={require("../../../assets/images/health.png")} className="w-full h-full object-cover" />
+                            <Image style={{ width: "100%", height: "100%", borderWidth: 1, borderColor: "#eee", borderRadius: 12 }} source={require("../../../assets/images/health.png")} className="w-full h-full object-cover" />
                         </View>
                         <View className="w-[calc(100%-40%)]">
                             <View className="flex flex-row items-center justify-between">
@@ -187,13 +229,13 @@ const Dashboard = () => {
                                 <Text className="font-[ebold] text-gray-400">{dayjs().format('HH:mm')}</Text>
                             </View>
                             <View className="flex flex-row gap-2 items-center">
-                                <Text className="font-[esemibold] text-gray-600 text-xl">{step?.quantity} Steps</Text>
+                                <Text className="font-[esemibold] text-gray-600 text-xl">{dailyDetail.appleStep} Steps</Text>
                             </View>
                             <View className="flex flex-row gap-2 items-center">
-                                <Text className="font-[esemibold] text-gray-400 text-xl">{Number(kcal?.quantity).toFixed(0)} kcal</Text>
+                                <Text className="font-[esemibold] text-gray-400 text-xl">{dailyDetail.appleBurned} kcal</Text>
                             </View>
                         </View>
-                    </View> : null} */}
+                    </View> : null}
 
                     <FlashList
                         data={dailyDetail.exerciseLogs}
@@ -203,7 +245,7 @@ const Dashboard = () => {
                                     Haptic.impactAsync(Haptic.ImpactFeedbackStyle.Medium)
 
                                     router.push(`/ex/${item.id}`)
-                                }} activeOpacity={0.9} className="w-full h-[110px] p-2 flex flex-row gap-5 bg-white border rounded-[12px] border-gray-200 shadow">
+                                }} activeOpacity={0.9} className="w-full mb-2 h-[110px] p-2 flex flex-row gap-5 bg-white border rounded-[12px] border-gray-200">
 
 
                                     <View className="w-[30%] h-full rounded-xl bg-gray-100 flex justify-center items-center">
@@ -221,8 +263,8 @@ const Dashboard = () => {
                                             <Text className="font-[ebold] text-sm text-gray-400">{dayjs(item.createdAt).format("HH:mm")}</Text>
                                         </View>
                                         <View className="flex flex-row gap-1 items-center">
-                                            <Image style={{ width: 25, height: 25 }} source={require("../../../assets/images/fire.png")} className="w-full h-full object-cover" />
-                                            <Text className={`font-[ebold] text-xl ${item.quantity <= 0 ? 'line-through text-gray-300' : 'text-orange-600'}`}>{item.caloriesBurned} Kcal</Text>
+                                            <Image style={{ width: 25, height: 25 }} source={require("../../../assets/images/running.png")} className="w-full h-full object-cover" />
+                                            <Text className={`font-[ebold] text-xl ${item.quantity <= 0 ? 'line-through text-gray-300' : 'text-emerald-500'}`}>{item.caloriesBurned} Kcal</Text>
                                         </View>
                                     </View>
                                 </TouchableOpacity>
@@ -239,7 +281,7 @@ const Dashboard = () => {
                                     Haptic.impactAsync(Haptic.ImpactFeedbackStyle.Medium)
 
                                     router.push(`/product/${item.id}`)
-                                }} activeOpacity={0.9} className="w-full h-[110px] mb-5 p-2 flex flex-row gap-5 bg-white border rounded-[12px] border-gray-200 shadow">
+                                }} activeOpacity={0.9} className="w-full mb-2 h-[110px] p-2 flex flex-row gap-5 bg-white border rounded-[12px] border-gray-200">
 
 
                                     <View className="w-[30%] h-full rounded-xl bg-gray-100 flex justify-center items-center">
@@ -292,8 +334,9 @@ const Dashboard = () => {
                         dailyLogId: dailyDetail.id
                     }
                 })
-            }} className="w-[60px] h-[60px] flex justify-center items-center absolute bottom-30 rounded-full right-10 bg-linear-to-r from-purple-200 via-violet-400 to-indigo-600 shadow" activeOpacity={0.7}>
-                <Ionicons name="add" size={24} color="white" />
+            }} className="w-[60px] h-[60px] flex justify-center items-center absolute bottom-30 rounded-full right-10 bg-[#F5EBE0] border-gray-400 border-1 shadow shadow-lg" activeOpacity={0.7}>
+
+                <Image source={require("../../../assets/images/carrot.png")} style={{ width: 60, height: 60 }} />
             </TouchableOpacity>
 
 

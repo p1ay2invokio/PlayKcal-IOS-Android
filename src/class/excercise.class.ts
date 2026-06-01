@@ -43,4 +43,18 @@ export class Excercise {
         let { data } = await axios.delete(`${public_url}/api/exercise/${id}`)
         return data
     }
+
+    public updateAppleFitness = async (id: number, kcal: any, step: any) => {
+        try {
+            let { data } = await axios.patch(`${public_url}/api/applefitness`, {
+                dailyId: id,
+                kcal: kcal,
+                step: step
+            })
+            return data
+        } catch (err: any) {
+            console.log("status:", err.response?.status)
+            console.log("error data:", JSON.stringify(err.response?.data))
+        }
+    }
 }

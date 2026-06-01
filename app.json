@@ -1,16 +1,17 @@
 {
   "expo": {
-    "name": "my-app",
-    "slug": "my-app",
+    "name": "PlayKcal",
+    "slug": "playkcal",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "icon": "./assets/images/appstore.png",
+    "scheme": "playkcal",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon",
-      "scheme": "com.play21947.my-app",
-      "bundleIdentifier": "com.play21947.my-app",
+      "icon": "./assets/images/appstore.png",
+      "scheme": "com.boonmata.playkcal",
+      "bundleIdentifier": "com.boonmata.playkcal",
+      "googleServicesFile": "./GoogleService-Info.plist",
       "entitlements": {
         "com.apple.developer.applesignin": [
           "Default"
@@ -20,9 +21,7 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "./assets/images/appstore.png"
       },
       "predictiveBackGestureEnabled": false,
       "permissions": [
@@ -37,7 +36,8 @@
         "android.permission.INTERNET",
         "android.permission.CAMERA"
       ],
-      "package": "com.play21947.myapp"
+      "package": "com.boonmata.playkcal",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "output": "static",
@@ -87,14 +87,6 @@
         }
       ],
       [
-        "expo-build-properties",
-        {
-          "ios": {
-            "useFrameworks": "static"
-          }
-        }
-      ],
-      [
         "@react-native-google-signin/google-signin",
         {
           "iosUrlScheme": "com.googleusercontent.apps.142861096280-rng79cit1lv79i2ltf62crrt6g5dracu"
@@ -116,7 +108,9 @@
           "enableBackgroundPlayback": true,
           "enableBackgroundRecording": false
         }
-      ]
+      ],
+      "@react-native-firebase/app",
+      "@react-native-firebase/messaging"
     ],
     "experiments": {
       "typedRoutes": true,
