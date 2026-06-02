@@ -12,38 +12,61 @@ const Height = () => {
     let { nextPage, previousPage, setHeight, current, setCurrent } = useMeasureStore()
 
     return (
-        <View className="flex-1 justify-center items-center bg-white">
-            <Text className="font-[ebold] text-gray-500 text-2xl absolute top-30">Current Height ?</Text>
+        <View className="flex-1 bg-white px-6">
 
-            <TouchableOpacity className="absolute top-15 left-5 p-2" onPress={() => setCurrent(current - 1)}>
-                <Ionicons name="arrow-back" size={24} color="black" />
+            {/* ปุ่ม Back ทำเป็นปุ่มวงกลมสวยๆ (ตำแหน่งเดียวกับหน้า Gender) */}
+            <TouchableOpacity
+                className="absolute top-16 left-6 w-12 h-12 bg-gray-50 border border-gray-100 rounded-full flex justify-center items-center z-10"
+                onPress={() => setCurrent(current - 1)}
+            >
+                <Ionicons name="arrow-back" size={24} color="#4B5563" />
             </TouchableOpacity>
 
-            <RulerPicker
+            {/* Header Section (ดันลงมาให้อยู่ใต้ปุ่ม Back) */}
+            <View className="items-center mt-36 mb-10">
+                <Text className="font-[ebold] text-3xl text-gray-800 mb-3 text-center">
+                    What's your height?
+                </Text>
+                <Text className="font-[emedium] text-base text-gray-500 text-center px-4">
+                    This helps us tailor your fitness and calorie goals.
+                </Text>
+            </View>
 
-                min={140}
-                max={220}
-                step={1}
-                fractionDigits={0}
-                initialValue={150}
-                decelerationRate={'normal'}
-                onValueChangeEnd={(number: any) => setHeight(number)}
-                unit="cm"
-                height={60}
-                width={300}
-                //@ts-ignore
-                unitTextStyle={{ fontSize: 16, color: '#888', fontFamily: 'mbold' }}
-                //@ts-ignore
-                valueTextStyle={{ fontSize: 24, color: '#000', fontWeight: 'bold', minWidth: 70, textAlign: 'center' }}
-            />
+            {/* Center Content: Ruler Picker */}
+            <View className="flex-1 justify-center items-center w-full">
+                <View className="bg-gray-50 py-10 px-4 rounded-[32px] w-full items-center border border-gray-100">
+                    <RulerPicker
+                        min={140}
+                        max={220}
+                        step={1}
+                        fractionDigits={0}
+                        initialValue={150}
+                        decelerationRate={'normal'}
+                        onValueChangeEnd={(number: any) => setHeight(number)}
+                        unit="cm"
+                        height={60}
+                        width={280}
+                        //@ts-ignore
+                        unitTextStyle={{ fontSize: 18, color: '#9CA3AF', fontFamily: 'mbold', marginBottom: 4 }}
+                        //@ts-ignore
+                        valueTextStyle={{ fontSize: 40, color: '#1F2937', fontWeight: 'bold', minWidth: 80, textAlign: 'center' }}
+                    />
+                </View>
+            </View>
 
-            <Animated.View className={'absolute bottom-40'}>
-                <TouchableOpacity onPress={() => {
-                    nextPage()
-                }} activeOpacity={0.7} className=" rounded-2xl bg-black py-1">
-                    <Text className="font-[ebold] text-white text-2xl px-4 py-2">Continue</Text>
+            {/* Bottom Action: Continue Button (ดันลงล่างสุดอัตโนมัติด้วย mt-auto) */}
+            <Animated.View className="w-full mt-auto mb-12">
+                <TouchableOpacity
+                    onPress={() => nextPage()}
+                    activeOpacity={0.85}
+                    className="w-full rounded-[24px] bg-gray-900 py-4 items-center flex justify-center shadow-md shadow-gray-400/30"
+                >
+                    <Text className="font-[ebold] text-white text-xl tracking-wide">
+                        Continue
+                    </Text>
                 </TouchableOpacity>
             </Animated.View>
+
         </View>
     )
 }

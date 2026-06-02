@@ -2,6 +2,7 @@ import axios from "axios"
 import { CameraCapturedPicture } from 'expo-camera';
 import { public_url } from "../../config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import dayjs from "dayjs";
 
 export const analysis_food = async (image: CameraCapturedPicture, currentDate: string) => {
 
@@ -14,6 +15,7 @@ export const analysis_food = async (image: CameraCapturedPicture, currentDate: s
         type: 'image/jpeg',
         name: 'photo.jpg'
     } as any)
+
     formData.append('currentDate', currentDate)
 
     // ✅ log ดูก่อน

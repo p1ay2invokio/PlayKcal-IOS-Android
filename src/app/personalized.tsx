@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { Text, View } from "react-native"
+import { Text, View, ActivityIndicator } from "react-native"
 import cookie from '@react-native-async-storage/async-storage'
 import { router } from "expo-router"
 import { useMeasureStore } from "@/stores/measure.store"
@@ -23,8 +23,23 @@ const Personalized = () => {
     }, [])
 
     return (
-        <View className="flex-1 justify-center items-center bg-white">
-            <Text>Personalizing...</Text>
+        <View className="flex-1 justify-center items-center bg-white px-8">
+
+            {/* วงกลมล้อมรอบ Spinner ให้ดูพรีเมียมขึ้น */}
+            <View className="w-24 h-24 bg-gray-50 rounded-full flex justify-center items-center mb-6 shadow-sm border border-gray-100">
+                <ActivityIndicator size="large" color="#1F2937" /> {/* ใช้สีเทาเข้ม/ดำ ให้เข้ากับธีมแอป */}
+            </View>
+
+            {/* Header Text */}
+            <Text className="font-[ebold] text-2xl text-gray-800 text-center mb-3 tracking-wide">
+                Personalizing your plan...
+            </Text>
+
+            {/* Subtext อธิบายว่ากำลังทำอะไร */}
+            <Text className="font-[emedium] text-base text-gray-500 text-center leading-relaxed">
+                We are crunching the numbers to craft the perfect daily goals for you.
+            </Text>
+
         </View>
     )
 }

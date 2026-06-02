@@ -18,8 +18,12 @@ import {
     Alert,
     ScrollView,
     Keyboard,
+    Dimensions,
 } from "react-native";
 import { BarChart } from 'react-native-gifted-charts'
+
+const screenWidth = Dimensions.get('window').width;
+const chartWidth = screenWidth - 70; // ความกว้างของกรอบที่มองเห็น (Viewport)
 
 
 const Recap = () => {
@@ -89,7 +93,7 @@ const Recap = () => {
             <ScrollView
                 className="flex-1 p-5 px-5 pt-5 gap-3 bg-white">
 
-                <View className="border border-gray-200 rounded-2xl p-3">
+                <View className="border border-gray-200 rounded-3xl shadow-gray-200 shadow-sm p-3">
                     <BMITimeline></BMITimeline>
                     {/* <TouchableOpacity onPress={() => setModal(true)} activeOpacity={0.7} className='flex-1 bg-green-600 py-3 rounded-xl flex justify-center items-center mb-3'>
                         <Text className='text-white font-[ebold]'>Update Current Weight</Text>
@@ -98,54 +102,85 @@ const Recap = () => {
 
 
 
-                <View className="bg-white p-3 rounded-2xl mt-4 border border-gray-200">
+                <View className="bg-white p-5 rounded-3xl mt-4 border border-gray-100 shadow-sm shadow-gray-200 overflow-hidden">
 
-                    <Text className="text-center mb-3 font-[ebold] text-xl text-gray-500">7 Days of total calories</Text>
+                    {/* Header Section */}
+                    <View className="mb-6">
+                        <Text className="font-[ebold] text-2xl text-gray-800">
+                            Calories Burned
+                        </Text>
+                        <Text className="font-[emedium] text-sm text-gray-400 mt-1">
+                            Last 7 days of total calories
+                        </Text>
+                    </View>
 
                     <BarChart
-                        barWidth={20}
-                        barBorderRadius={4}
-                        frontColor="#8b5cf6"
-                        barStyle={{ fontFamily: 'emedium' }}
                         data={barData}
+                        width={chartWidth}
+                        barWidth={28} // ปรับให้แท่งหนาขึ้นเล็กน้อย
+                        spacing={35} // ระยะห่างระหว่างแท่ง
+                        barBorderRadius={6} // มุมโค้งมนขึ้น
+
+                        // การตั้งค่าสีและ Gradient (ช่วยให้กราฟดูมีมิติ)
+                        frontColor="#8b5cf6"
+                        showGradient
+                        gradientColor="#c4b5fd"
+
+                        // ซ่อนแกนเส้นทึบ แต่แสดงเส้นกริดจางๆ ด้านหลัง
                         yAxisThickness={0}
                         xAxisThickness={0}
-                        xAxisLabelTextStyle={{ fontFamily: 'emedium' }}
-                        yAxisTextStyle={{ fontFamily: 'emedium' }}
+                        hideRules={false}
+                        rulesType="solid"
+                        rulesColor="#f3f4f6"
+
+                        // ปรับแต่งฟอนต์และสีของตัวเลขบนแกน
+                        xAxisLabelTextStyle={{ fontFamily: 'emedium', color: '#9ca3af', fontSize: 12 }}
+                        yAxisTextStyle={{ fontFamily: 'emedium', color: '#9ca3af', fontSize: 12 }}
+
+                        // Tooltip ที่ดูสวยงามและชัดเจนขึ้น
                         renderTooltip={(item: any) => (
                             <View style={{
-                                backgroundColor: '#8b5cf6',
-                                paddingHorizontal: 4,
-                                paddingVertical: 2,
-                                borderRadius: 4,
-                                marginBottom: 4,
+                                backgroundColor: '#1f2937', // สีพื้นหลังเข้มเพื่อให้ข้อความเด่น
+                                paddingHorizontal: 10,
+                                paddingVertical: 6,
+                                borderRadius: 8,
+                                marginBottom: 8,
+                                // เพิ่มเงาให้ Tooltip
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 2 },
+                                shadowOpacity: 0.15,
+                                shadowRadius: 4,
+                                elevation: 3,
                             }}>
                                 <Text style={{
                                     color: 'white',
-                                    fontSize: 10,
-                                    fontFamily: 'emedium',
+                                    fontSize: 12,
+                                    fontFamily: 'ebold',
+                                    textAlign: 'center'
                                 }}>
                                     {item.value}
                                 </Text>
+                                <Text style={{
+                                    color: '#9ca3af',
+                                    fontSize: 10,
+                                    fontFamily: 'emedium',
+                                    textAlign: 'center'
+                                }}>
+                                    kcal
+                                </Text>
                             </View>
                         )}
-                        disableScroll={true}
+
+                        initialSpacing={10}
+                        disableScroll={false}
+                        scrollToEnd={true}
                         horizontal={false}
-                        width={400}
-                        hideRules={true}
                         minHeight={5}
-                        noOfSections={6}
+                        noOfSections={5} // ลดจำนวน Section ลงเพื่อให้เส้นกริดไม่ดูรกเกินไป
                         stepValue={1200}
                         maxValue={6000}
                     />
                 </View>
-
-                {/* <View className="mt-3 flex flex-row gap-2">
-                <Pie></Pie>
-                <View className="flex-1 border border-gray-200 rounded-2xl p-3">
-                    <Text>Hello</Text>
-                </View>
-            </View> */}
             </ScrollView>
         </View>
     )

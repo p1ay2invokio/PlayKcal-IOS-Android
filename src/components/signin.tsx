@@ -16,7 +16,7 @@ const Signin = () => {
 
     let navigate = useRouter()
 
-    let {current, setCurrent} = useMeasureStore()
+    let { current, setCurrent } = useMeasureStore()
 
     const GoogleLogin = async () => {
         await GoogleSignin.hasPlayServices()
@@ -58,177 +58,172 @@ const Signin = () => {
     }, [])
 
     return (
-        <View className="flex-1 justify-center items-center bg-white gap-5">
+        <View className="flex-1 bg-white px-6">
 
-            <TouchableOpacity className="absolute top-15 left-5 p-2" onPress={() => setCurrent(weight ? current - 1 : 0)}>
-                <Ionicons name="arrow-back" size={24} color="black" />
+            {/* ปุ่ม Back */}
+            <TouchableOpacity
+                className="absolute top-16 left-6 w-12 h-12 bg-gray-50 border border-gray-100 rounded-full flex justify-center items-center z-10"
+                onPress={() => setCurrent(weight ? current - 1 : 0)}
+            >
+                <Ionicons name="arrow-back" size={24} color="#4B5563" />
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={async () => {
-                let res = await Line.login({
-                    scopes: [Scope.Profile, Scope.OpenId],
-                })
+            {/* Header Section */}
+            <View className="items-center mt-36 mb-12">
+                <Text className="font-[ebold] text-3xl text-gray-800 mb-3 text-center">
+                    Almost there!
+                </Text>
+                <Text className="font-[emedium] text-base text-gray-500 text-center px-4 leading-relaxed">
+                    Create an account or log in to save your personalized plan and track your progress.
+                </Text>
+            </View>
 
-                let userId = res.userProfile?.userId
-                let displayName = res.userProfile?.displayName
-                let pictureUrl = res.userProfile?.pictureUrl
+            {/* Login Buttons Container */}
+            <View className="w-full gap-4">
 
-                let formData = new FormData()
+                {/* LINE Button */}
+                <TouchableOpacity
+                    activeOpacity={0.85}
+                    onPress={async () => {
+                        let res = await Line.login({
+                            scopes: [Scope.Profile, Scope.OpenId],
+                        })
 
-                formData.append("userId", userId!)
-                formData.append("displayName", displayName!)
-                formData.append("pictureUrl", pictureUrl!)
-                formData.append("sex", sex)
-                formData.append("dob", dob)
-                formData.append("fast", fast)
-                formData.append("weight", weight)
-                formData.append("height", height)
-                formData.append("goal", goal)
-                formData.append("targetWeight", targetWeight)
+                        let userId = res.userProfile?.userId
+                        let displayName = res.userProfile?.displayName
+                        let pictureUrl = res.userProfile?.pictureUrl
 
-                let { data } = await axios.post(`${process.env.EXPO_PUBLIC_URI}/auth/line`, formData)
+                        let formData = new FormData()
 
-                if (data.statusCode === 201 || data.statusCode === 200) {
-                    cookie.setItem("token", data.token)
-                    navigate.replace("/personalized")
-                }
+                        formData.append("userId", userId!)
+                        formData.append("displayName", displayName!)
+                        formData.append("pictureUrl", pictureUrl!)
+                        formData.append("sex", sex)
+                        formData.append("dob", dob)
+                        formData.append("fast", fast)
+                        formData.append("weight", weight)
+                        formData.append("height", height)
+                        formData.append("goal", goal)
+                        formData.append("targetWeight", targetWeight)
 
-            }} activeOpacity={0.7} className="w-[80%] flex-row gap-5 h-[50px] rounded-xl bg-green-600 flex justify-between px-14 items-center">
-                <Image style={{ width: 28, height: 28 }} source={require('../../assets/images/line.png')} />
+                        let { data } = await axios.post(`${process.env.EXPO_PUBLIC_URI}/auth/line`, formData)
 
-                <Text className="text-white font-[ebold] text-xl">Continue with LINE</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={async () => {
-                const data = await GoogleLogin();
-
-                if (data.type === 'success') {
-                    const user = data.data.user;
-
-                    // รวมข้อมูลจาก Google และข้อมูลสัดส่วน/เป้าหมายจาก Store
-                    const payload = {
-                        provider: 'google',
-                        providerId: user.id,
-                        name: user.name,
-                        email: user.email,
-                        image: user.photo,
-
-                        // ข้อมูลเพิ่มเติมจาก useMeasureStore
-                        sex: sex || null,
-                        dob: dob || null,
-                        fast: fast ? parseFloat(fast) : null, // แปลงเป็น Float หากใน Store เป็น String
-                        weight: weight ? parseFloat(weight) : null, // แปลงเป็น Float
-                        height: height ? parseFloat(height) : null, // แปลงเป็น Float
-                        goal: goal || null,
-                        targetWeight: targetWeight ? parseInt(targetWeight) : null, // แปลงเป็น Int
-                    };
-
-                    // อย่าลืม import axios ด้านบนของไฟล์ด้วยนะครับ
-                    // import axios from 'axios';
-
-                    try {
-                        // axios.post(URL, data) ส่ง payload ไปได้เลย ไม่ต้อง stringify
-                        const response = await axios.post(`${process.env.EXPO_PUBLIC_URI}/auth/google`, payload);
-
-                        // ข้อมูลที่ Server ส่งกลับมาจะอยู่ใน response.data อัตโนมัติ
-                        const result = response.data;
-
-                        console.log('บันทึกข้อมูลและเข้าสู่ระบบสำเร็จ:', result);
-
-                        if (result.statusCode === 201 || result.statusCode === 200) {
-                            cookie.setItem("token", result.token)
+                        if (data.statusCode === 201 || data.statusCode === 200) {
+                            cookie.setItem("token", data.token)
                             navigate.replace("/personalized")
                         }
+                    }}
+                    className="w-full h-14 rounded-2xl bg-[#00C300] flex-row justify-center items-center relative shadow-sm shadow-green-200"
+                >
+                    <View className="absolute left-6 flex justify-center items-center">
+                        <Image style={{ width: 24, height: 24 }} source={require('../../assets/images/line.png')} />
+                    </View>
+                    <Text className="text-white font-[ebold] text-lg tracking-wide">Continue with LINE</Text>
+                </TouchableOpacity>
 
+                {/* Google Button */}
+                <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={async () => {
+                        const data = await GoogleLogin();
 
+                        if (data.type === 'success') {
+                            const user = data.data.user;
 
-                        // console.log(response); // response ของ axios จะมี detail เยอะมาก (status, headers, config, data)
-                        // router.replace('/personalized')
+                            const payload = {
+                                provider: 'google',
+                                providerId: user.id,
+                                name: user.name,
+                                email: user.email,
+                                image: user.photo,
+                                sex: sex || null,
+                                dob: dob || null,
+                                fast: fast ? parseFloat(fast) : null,
+                                weight: weight ? parseFloat(weight) : null,
+                                height: height ? parseFloat(height) : null,
+                                goal: goal || null,
+                                targetWeight: targetWeight ? parseInt(targetWeight) : null,
+                            };
 
-                    } catch (error: any) {
-                        // axios จะโยนมาเข้า catch ทันทีถ้า Server ตอบกลับด้วย Status 4xx หรือ 5xx
-                        if (error.response) {
-                            // Server ตอบกลับมาแล้ว แต่เป็น Error (เช่น 400 Bad Request, 500 Internal Server Error)
-                            console.error('เกิดข้อผิดพลาดจาก Server:', error.response.data);
-                        } else if (error.request) {
-                            // ส่ง Request ไปแล้ว แต่ไม่ได้รับการตอบกลับเลย (เช่น Server ล่ม, เน็ตหลุด)
-                            console.error('ไม่สามารถเชื่อมต่อกับ Server ได้:', error.request);
-                        } else {
-                            // เกิด Error อื่นๆ ก่อนที่จะส่ง Request ได้สำเร็จ
-                            console.error('ตั้งค่า Request ผิดพลาด:', error.message);
+                            try {
+                                const response = await axios.post(`${process.env.EXPO_PUBLIC_URI}/auth/google`, payload);
+                                const result = response.data;
+
+                                console.log('บันทึกข้อมูลและเข้าสู่ระบบสำเร็จ:', result);
+
+                                if (result.statusCode === 201 || result.statusCode === 200) {
+                                    cookie.setItem("token", result.token)
+                                    navigate.replace("/personalized")
+                                }
+
+                            } catch (error: any) {
+                                if (error.response) {
+                                    console.error('เกิดข้อผิดพลาดจาก Server:', error.response.data);
+                                } else if (error.request) {
+                                    console.error('ไม่สามารถเชื่อมต่อกับ Server ได้:', error.request);
+                                } else {
+                                    console.error('ตั้งค่า Request ผิดพลาด:', error.message);
+                                }
+                            }
                         }
-                    }
-                }
+                    }}
+                    className="w-full h-14 rounded-2xl bg-white border border-gray-200 flex-row justify-center items-center relative shadow-sm shadow-gray-100"
+                >
+                    <View className="absolute left-6 flex justify-center items-center">
+                        <Image style={{ width: 24, height: 24 }} source={require('../../assets/images/search.png')} />
+                    </View>
+                    <Text className="text-gray-700 font-[ebold] text-lg tracking-wide">Continue with Google</Text>
+                </TouchableOpacity>
 
+                {/* Apple Button */}
+                <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={async () => {
+                        let data = await AppleLogin()
 
-            }} activeOpacity={0.7} className="w-[80%] flex-row gap-5 h-[50] rounded-xl border border-gray-300 flex justify-between px-14 items-center">
-                <Image style={{ width: 28, height: 28 }} source={require('../../assets/images/search.png')} />
+                        if (data) {
+                            let userId = data?.user;
 
-                <Text className="text-gray-700 font-[ebold] text-xl">Continue with Google</Text>
-            </TouchableOpacity>
+                            let givenName = data?.fullName?.givenName || '';
+                            let familyName = data?.fullName?.familyName || '';
+                            let displayName = `${givenName} ${familyName}`.trim();
 
+                            let email = data?.email;
 
-            <TouchableOpacity onPress={async () => {
-                let data = await AppleLogin()
+                            const payload = {
+                                providerId: userId,
+                                name: displayName || undefined,
+                                email: email || undefined,
+                                sex: sex || undefined,
+                                dob: dob || undefined,
+                                fast: fast ? parseFloat(fast) : undefined,
+                                weight: weight ? parseFloat(weight) : undefined,
+                                height: height ? parseFloat(height) : undefined,
+                                goal: goal || undefined,
+                                targetWeight: targetWeight ? parseInt(targetWeight) : undefined,
+                            };
 
+                            const response = await axios.post(`${process.env.EXPO_PUBLIC_URI}/auth/apple`, payload);
+                            const result = response.data;
 
-                if (data) {
-                    let userId = data?.user;
+                            console.log('Apple Login สำเร็จ:', result);
 
-                    // รวมชื่อและนามสกุล (ถ้ามี)
-                    let givenName = data?.fullName?.givenName || '';
-                    let familyName = data?.fullName?.familyName || '';
-                    let displayName = `${givenName} ${familyName}`.trim();
+                            if (result.statusCode === 201 || result.statusCode === 200) {
+                                cookie.setItem("token", result.token)
+                                navigate.replace("/personalized")
+                            }
+                        }
+                    }}
+                    className="w-full h-14 rounded-2xl bg-white border border-gray-200 flex-row justify-center items-center relative shadow-sm shadow-gray-100"
+                >
+                    <View className="absolute left-6 flex justify-center items-center">
+                        <Image style={{ width: 24, height: 24 }} source={require('../../assets/images/apple-logo.png')} />
+                    </View>
+                    <Text className="text-gray-700 font-[ebold] text-lg tracking-wide">Continue with Apple</Text>
+                </TouchableOpacity>
 
-                    let email = data?.email;
+            </View>
 
-                    // สร้าง Payload
-                    const payload = {
-                        providerId: userId,
-                        name: displayName || undefined, // ถ้าไม่มีให้เป็น undefined
-                        email: email || undefined,      // ถ้าไม่มีให้เป็น undefined
-
-                        // ข้อมูลจาก Store
-                        sex: sex || undefined,
-                        dob: dob || undefined,
-                        fast: fast ? parseFloat(fast) : undefined,
-                        weight: weight ? parseFloat(weight) : undefined,
-                        height: height ? parseFloat(height) : undefined,
-                        goal: goal || undefined,
-                        targetWeight: targetWeight ? parseInt(targetWeight) : undefined,
-                    };
-
-                    // ส่งไปที่ Backend ด้วย axios
-                    const response = await axios.post(`${process.env.EXPO_PUBLIC_URI}/auth/apple`, payload);
-                    const result = response.data;
-
-                    console.log('Apple Login สำเร็จ:', result);
-
-
-                    if (result.statusCode === 201 || result.statusCode === 200) {
-                        cookie.setItem("token", result.token)
-                        navigate.replace("/personalized")
-                    }
-
-                    // ไปหน้าต่อไป และเก็บ Token
-                    // const token = result.token;
-                    // router.replace('/personalized');
-                }
-
-
-            }} activeOpacity={0.7} className="w-[80%] flex-row gap-5 h-[50] rounded-xl border border-gray-300 flex justify-between px-14 items-center">
-                <Image style={{ width: 28, height: 28 }} source={require('../../assets/images/apple-logo.png')} />
-
-                <Text className="text-gray-700 font-[ebold] text-xl">Continue with Apple</Text>
-            </TouchableOpacity>
-
-
-            {/* <TouchableOpacity onPress={() => {
-                console.log(sex, dob, fast, weight, height, goal, targetWeight)
-            }} activeOpacity={0.7} className="w-[80%] flex-row gap-5 h-[50] rounded-xl border border-gray-300 flex justify-between px-14 items-center">
-
-                <Text className="text-gray-700 font-[ebold] text-xl">Check</Text>
-            </TouchableOpacity> */}
         </View>
     )
 }

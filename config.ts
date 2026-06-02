@@ -1,1 +1,1 @@
-export const public_url = "http://192.168.1.5:3001"
+export const public_url = "https://playkcal.outwittrader.com"

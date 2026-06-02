@@ -52,47 +52,56 @@ export default function BMITimeline() {
         })()
     }, []))
 
-    if(!bmi){
+    if (!bmi) {
         return null
     }
 
     return (
-        <View className="flex-1 bg-white px-5 pt-10 rounded-2xl  border-gray-200">
+        <View className="flex-1 bg-white px-5 pt-10 rounded-2xl border-gray-200">
 
-            {/* Status card */}
+            {/* Status Card */}
             <View
-                className="rounded-2xl p-4 mb-3 flex-row items-center gap-4 "
-                style={{ backgroundColor: zone.bg }}
+                className="rounded-2xl mb-4 flex-row items-center"
+                style={{ backgroundColor: zone.bg, padding: 20 }}
             >
-                <View>
-                    <Text className="text-xs text-gray-500 mb-1">BMI</Text>
-                    <Text className="text-4xl font-medium" style={{ color: zone.color }}>
+                {/* BMI Value */}
+                <View className="flex-1 items-center">
+                    <Text className="text-xs text-gray-400 font-[ebold] uppercase" style={{ marginBottom: 4, letterSpacing: 1 }}>
+                        BMI
+                    </Text>
+                    <Text className="text-5xl font-[ebold]" style={{ color: zone.color }}>
                         {bmi.toFixed(1)}
                     </Text>
                 </View>
+
                 <View className="w-px self-stretch bg-gray-200 mx-2" />
-                <View>
-                    <Text className="text-xs text-gray-500 mb-1 font-[emedium]">Status</Text>
-                    <Text className="text-sm font-[esemibold]" style={{ color: zone.color }}>
+
+                {/* Status */}
+                <View className="flex-1 items-center">
+                    <Text className="text-xs text-gray-400 font-[emedium] uppercase" style={{ marginBottom: 4, letterSpacing: 1 }}>
+                        Status
+                    </Text>
+                    <Text className="text-base font-[ebold]" style={{ color: zone.color }}>
                         {zone.label}
                     </Text>
-                    <Text className="text-xs text-gray-400 mt-0.5 font-[emedium]">{zone.range}</Text>
+                    <Text className="text-xs text-gray-400 font-[emedium]" style={{ marginTop: 2 }}>
+                        {zone.range}
+                    </Text>
                 </View>
-
             </View>
 
-            {/* Timeline bar */}
+            {/* Timeline Bar */}
             <View className="mb-2">
-                <View className="relative h-6 rounded-full overflow-hidden flex-row">
+                <View className="relative h-7 rounded-full overflow-hidden flex-row">
                     {SEGMENTS.map((seg) => {
                         const width = ((seg.to - seg.from) / (MAX - MIN)) * 100
                         return (
                             <View
                                 key={seg.label}
                                 style={{ width: `${width}%`, backgroundColor: seg.color }}
-                                className="h-full justify-center items-center "
+                                className="h-full justify-center items-center"
                             >
-                                <Text style={{ fontSize: 9, color: 'white', fontWeight: '600', fontFamily: 'emedium' }}>
+                                <Text style={{ fontSize: 9, color: 'white', fontFamily: 'ebold' }}>
                                     {seg.label}
                                 </Text>
                             </View>
@@ -102,23 +111,28 @@ export default function BMITimeline() {
 
                 {/* Marker */}
                 <View
-                    className="absolute -top-1"
-                    style={{ left: `${markerPercent}%`, marginLeft: -10 }}
+                    className="absolute"
+                    style={{ left: `${markerPercent}%`, marginLeft: -10, top: -4 }}
                     pointerEvents="none"
                 >
-                    <View
-                        className="w-5 h-8 items-center justify-center"
-                    >
+                    <View className="w-5 h-9 items-center justify-center">
                         <View
-                            className="w-4 h-4 rounded-full bg-white border-2"
-                            style={{ borderColor: zone.color }}
+                            className="w-5 h-5 rounded-full bg-white border-2"
+                            style={{
+                                borderColor: zone.color,
+                                shadowColor: zone.color,
+                                shadowOffset: { width: 0, height: 2 },
+                                shadowOpacity: 0.4,
+                                shadowRadius: 4,
+                                elevation: 4,
+                            }}
                         />
                     </View>
                 </View>
             </View>
 
-            {/* Tick labels */}
-            <View className="flex-row justify-between mb-6 px-0">
+            {/* Tick Labels */}
+            <View className="flex-row justify-between px-0" style={{ marginBottom: 24 }}>
                 {[10, 18.5, 23, 25, 30, 45].map((tick) => (
                     <Text key={tick} className="text-xs font-[emedium] text-gray-400">
                         {tick}

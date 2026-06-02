@@ -13,33 +13,65 @@ const Sex = () => {
     let navigate = useRouter()
 
     return (
-        <View className="flex-1 justify-center items-center bg-white p-5">
+        <View className="flex-1 justify-center items-center bg-white px-6">
 
-            <TouchableOpacity className="absolute top-15 left-5 p-2" onPress={() => setCurrent(current - 1)}>
-                <Ionicons name="arrow-back" size={24} color="black" />
+            {/* ปุ่ม Back ทำเป็นปุ่มวงกลมสวยๆ */}
+            <TouchableOpacity
+                className="absolute top-16 left-6 w-12 h-12 bg-gray-50 border border-gray-100 rounded-full flex justify-center items-center z-10"
+                onPress={() => setCurrent(current - 1)}
+            >
+                <Ionicons name="arrow-back" size={24} color="#4B5563" />
             </TouchableOpacity>
 
-            <Text className="font-[ebold] text-[24px] text-gray-600 mb-10">What's your gender ?</Text>
+            {/* Header Section */}
+            <View className="items-center mb-12 mt-[-40px]">
+                <Text className="font-[ebold] text-3xl text-gray-800 mb-3 text-center">
+                    What's your gender?
+                </Text>
+                <Text className="font-[emedium] text-base text-gray-500 text-center px-4">
+                    This helps us calculate your daily calorie needs accurately.
+                </Text>
+            </View>
 
-            <View className="w-full gap-4 flex-row">
-                <Animated.View className={'flex-1'}>
-                    <TouchableOpacity onPress={() => {
-                        setSex("male")
-                        nextPage()
-                    }} activeOpacity={0.7} className=" rounded-2xl py-1 bg-blue-600/10 border border-blue-300">
-                        <Text className="font-[esemibold] text-blue-500 text-2xl w-[100%] text-center py-2">Male</Text>
+            {/* Gender Selection Cards */}
+            <View className="w-full gap-5 flex-row">
+
+                {/* Male Card */}
+                <Animated.View className="flex-1">
+                    <TouchableOpacity
+                        onPress={() => {
+                            setSex("male")
+                            nextPage()
+                        }}
+                        activeOpacity={0.85}
+                        className="rounded-[32px] bg-blue-50 border-2 border-blue-200 aspect-square flex justify-center items-center shadow-sm shadow-blue-200"
+                    >
+                        {/* วงกลมรองหลังไอคอน */}
+                        <View className="w-16 h-16 bg-blue-100 rounded-full flex justify-center items-center mb-4">
+                            <Ionicons name="male" size={32} color="#3B82F6" />
+                        </View>
+                        <Text className="font-[ebold] text-blue-600 text-xl tracking-wide">Male</Text>
                     </TouchableOpacity>
                 </Animated.View>
 
-
-                <Animated.View className={'flex-1'}>
-                    <TouchableOpacity onPress={() => {
-                        setSex("female")
-                        nextPage()
-                    }} activeOpacity={0.7} className=" rounded-2xl py-1 bg-pink-500/10 border border-pink-300">
-                        <Text className="font-[esemibold] text-pink-400 text-2xl w-[100%] text-center py-2">Female</Text>
+                {/* Female Card */}
+                <Animated.View className="flex-1">
+                    <TouchableOpacity
+                        onPress={() => {
+                            setSex("female")
+                            nextPage()
+                        }}
+                        activeOpacity={0.85}
+                        className="rounded-[32px] bg-pink-50 border-2 border-pink-200 aspect-square flex justify-center items-center shadow-sm shadow-pink-200"
+                    >
+                        {/* วงกลมรองหลังไอคอน */}
+                        <View className="w-16 h-16 bg-pink-100 rounded-full flex justify-center items-center mb-4">
+                            <Ionicons name="female" size={32} color="#EC4899" />
+                        </View>
+                        <Text className="font-[ebold] text-pink-500 text-xl tracking-wide">Female</Text>
                     </TouchableOpacity>
                 </Animated.View>
+
             </View>
 
         </View>

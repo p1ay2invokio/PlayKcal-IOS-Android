@@ -60,174 +60,215 @@ const Product = () => {
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <View className="bg-white flex-1">
 
-                <Animated.View style={{ opacity: op_name }} className="w-full h-full absolute top-0 left-0 bg-[#000000]/50 z-11 flex justify-center items-center">
-                    <View className="px-8 py-12 border border-gray-300 sahdow-sm bg-white flex justify-center items-center rounded-2xl">
-                        <TextInput textAlign="center" value={nameTemp} onChangeText={(text) => {
-                            setNameTemp(text)
-                        }} style={{ includeFontPadding: false, lineHeight: 30 }} className="w-[200px] font-[medium] text-2xl h-[45px] border-gray-200 border rounded-xl"></TextInput>
-                        <View className="flex flex-row gap-4">
-                            <TouchableOpacity onPress={() => {
-                                Keyboard.dismiss()
-                                op_name.value = withSpring(0, { duration: 300 })
-                            }}>
-                                <Text className="font-[ebold] text-xl text-gray-700 mt-3">Cancel</Text>
+                {/* Modal เปลี่ยนชื่ออาหาร */}
+                <Animated.View
+                    style={{ opacity: op_name }}
+                    className="w-full h-full absolute top-0 left-0 bg-black/60 z-50 flex justify-center items-center px-6"
+                >
+                    <View className="w-full bg-white rounded-3xl p-6 shadow-lg">
+                        <Text className="font-[ebold] text-xl text-gray-800 mb-4 text-center">Edit Food Name</Text>
+
+                        <TextInput
+                            textAlign="center"
+                            value={nameTemp}
+                            onChangeText={setNameTemp}
+                            style={{ includeFontPadding: false }}
+                            className="w-full font-[medium] text-xl py-3 bg-gray-50 border-gray-200 border rounded-xl mb-5"
+                        />
+
+                        <View className="flex-row gap-3">
+                            <TouchableOpacity
+                                className="flex-1 bg-gray-100 py-3 rounded-xl items-center"
+                                onPress={() => {
+                                    Keyboard.dismiss()
+                                    op_name.value = withSpring(0, { duration: 300 })
+                                }}
+                            >
+                                <Text className="font-[ebold] text-lg text-gray-600">Cancel</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => {
-                                setName(nameTemp)
-                                Keyboard.dismiss()
-                                op_name.value = withSpring(0, { duration: 300 })
-                            }}>
-                                <Text className="font-[ebold] text-xl text-blue-600 mt-3">Save</Text>
+
+                            <TouchableOpacity
+                                className="flex-1 bg-blue-600 py-3 rounded-xl items-center shadow-sm shadow-blue-300"
+                                onPress={() => {
+                                    setName(nameTemp)
+                                    Keyboard.dismiss()
+                                    op_name.value = withSpring(0, { duration: 300 })
+                                }}
+                            >
+                                <Text className="font-[ebold] text-lg text-white">Save</Text>
                             </TouchableOpacity>
                         </View>
-
                     </View>
                 </Animated.View>
 
-
-                <TouchableOpacity onPress={() => {
-                    anim_opa.value = withSpring(anim_opa.value === 0 ? 1 : 0, { duration: 300 })
-
-
-                }} className="absolute right-5 top-13 z-10">
-                    <Image style={{ tintColor: 'white', width: 35, height: 35 }} source={require('../../../assets/images/more.png')}></Image>
+                {/* เมนู 3 จุด มุมขวาบน */}
+                <TouchableOpacity
+                    onPress={() => {
+                        anim_opa.value = withSpring(anim_opa.value === 0 ? 1 : 0, { duration: 300 })
+                    }}
+                    className="absolute right-5 top-12 z-20 bg-black/20 p-2 rounded-full"
+                >
+                    <Image style={{ tintColor: 'white', width: 24, height: 24 }} source={require('../../../assets/images/more.png')} />
                 </TouchableOpacity>
 
-                <Animated.View style={{ opacity: anim_opa }} className="w-[100px]  bg-white flex items-center rounded-2xl shadow absolute right-5 top-24 border border-gray-200 z-1">
-                    <TouchableOpacity className="py-3 w-full flex justify-center items-center">
+                {/* Popup ลบ/Favorite */}
+                <Animated.View
+                    style={{ opacity: anim_opa }}
+                    className="w-[120px] bg-white rounded-2xl shadow-md absolute right-5 top-24 z-10"
+                >
+                    <TouchableOpacity className="py-4 w-full flex justify-center items-center border-b border-gray-100">
                         <Text className="font-[ebold] text-gray-700">Favorite</Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => {
+
+                        anim_opa.value = withSpring(anim_opa.value === 0 ? 1 : 0, { duration: 300 })
                         Alert.alert("Are you sure you want to delete this item?", "This action cannot be undone.", [
-                            {
-                                text: 'Cancel',
-                            },
+                            { text: 'Cancel' },
                             {
                                 text: 'Delete',
                                 style: "destructive",
                                 onPress: async () => {
                                     let f = new Food()
                                     let res: any = await f.deleteFood(Number(id))
-
-                                    console.log(res)
-
                                     if (res == "Deleted") {
                                         router.replace("/home")
                                     }
                                 }
                             }
                         ])
-                    }} className="py-3 w-full flex justify-center items-center">
-                        <Text className="font-[ebold] text-red-600">Delete</Text>
+                    }} className="py-4 w-full flex justify-center items-center">
+                        <Text className="font-[ebold] text-red-500">Delete</Text>
                     </TouchableOpacity>
                 </Animated.View>
 
-                <Image style={{ width: '100%', height: 150 }} source={{ uri: `${public_url}/foods/${select?.img}` }}></Image>
-                <View className="p-5">
-                    <View className="flex flex-row justify-between">
-                        <Text className="font-[medium] text-2xl" style={{ lineHeight: 30 }}>{name ? name : select?.name}</Text>
-                        <TouchableOpacity onPress={() => {
-                            op_name.value = withSpring(1, { duration: 300 })
-                        }}>
-                            <Icon name="pencil-sharp" size={24} color="#4B5563"></Icon>
+                {/* รูปภาพ Header */}
+                <View className="relative">
+                    {select?.img ? (
+                        <Image style={{ width: '100%', height: 220 }} source={{ uri: `${public_url}/foods/${select.img}` }} />
+                    ) : (
+                        <Image style={{ width: '100%', height: 220, zIndex: -1 }} source={require("../../../assets/images/eat.png")} />
+                    )}
+                    {/* เงาด้านบนเพื่อให้เห็นเมนู 3 จุดชัดเจนขึ้น */}
+                    <View className="absolute top-0 w-full h-24 bg-black/10" />
+                </View>
+
+                {/* ส่วนเนื้อหาหลัก (ดึงขึ้นมาซ้อนทับภาพด้วย -mt-6) */}
+                <View className="flex-1 bg-white rounded-t-[30px] -mt-6 px-6 pt-6 shadow-sm">
+
+                    {/* ชื่ออาหาร & ปุ่มแก้ไข */}
+                    <View className="flex-row justify-between items-center mb-6">
+                        <Text className="font-[ebold] text-2xl text-gray-800 flex-1" numberOfLines={2}>
+                            {name ? name : select?.name}
+                        </Text>
+                        <TouchableOpacity
+                            className="p-2 bg-gray-100 rounded-full ml-3"
+                            onPress={() => op_name.value = withSpring(1, { duration: 300 })}
+                        >
+                            <Icon name="pencil-sharp" size={20} color="#4B5563" />
                         </TouchableOpacity>
                     </View>
 
-                    <View className="w-full px-6 py-4 flex flex-row justify-between items-center border border-gray-300 rounded-2xl mt-3">
-                        <View className="flex flex-row items-center gap-2">
-                            <Icon name="nutrition-outline" size={24} color="#4B5563"></Icon>
-                            <Text className="font-[ebold] text-xl text-gray-700">Portion</Text>
+                    {/* ส่วน Portion & Kcal */}
+                    <View className="gap-3">
+                        <View className="w-full px-5 py-4 flex-row justify-between items-center bg-gray-50 border border-gray-100 rounded-2xl">
+                            <View className="flex-row items-center gap-3">
+                                <Icon name="nutrition-outline" size={22} color="#4B5563" />
+                                <Text className="font-[ebold] text-lg text-gray-700">Portion</Text>
+                            </View>
+                            <TextInput
+                                keyboardType="number-pad"
+                                onFocus={() => setPortion('')}
+                                onChangeText={setPortion}
+                                textAlign="right"
+                                value={String(portion)}
+                                className="font-[ebold] text-xl text-blue-600 min-w-[60px]"
+                            />
                         </View>
-                        <TextInput keyboardType="number-pad" onFocus={() => {
-                            setPortion('')
-                        }} onChangeText={(e) => {
 
-                            setPortion(e)
-                        }} textAlign="center" value={String(portion)} className="font-[ebold] w-[60px] text-xl text-gray-700 border-b-1 border-gray-300 p-2 rounded-2xl"></TextInput>
+                        <View className="w-full px-5 py-4 flex-row justify-between items-center bg-orange-50 border border-orange-100 rounded-2xl">
+                            <View className="flex-row items-center gap-3">
+                                <Image style={{ width: 22, height: 22 }} source={require('../../../assets/images/fire.png')} />
+                                <Text className="font-[ebold] text-lg text-orange-700">Kcal</Text>
+                            </View>
+                            <TextInput
+                                keyboardType="number-pad"
+                                onFocus={() => setKcal('')}
+                                onChangeText={setKcal}
+                                textAlign="right"
+                                value={String(kcal)}
+                                className="font-[ebold] text-xl text-orange-600 min-w-[60px]"
+                            />
+                        </View>
                     </View>
 
-                    <View className="w-full px-6 py-4 flex flex-row justify-between items-center border border-gray-300 rounded-2xl mt-3">
-                        <View className="flex flex-row items-center gap-2">
-                            <Image style={{ width: 24, height: 24 }} source={require('../../../assets/images/fire.png')}></Image>
-                            <Text className="font-[ebold] text-xl text-gray-700">Kcal</Text>
+                    {/* ส่วน Macros (Protein, Carbs, Fat) */}
+                    <View className="flex-row gap-3 mt-3">
+                        <View className="flex-1 py-4 items-center bg-gray-50 border border-gray-100 rounded-2xl">
+                            <Text className="font-[ebold] text-xs text-gray-500 uppercase tracking-wider mb-1">Protein</Text>
+                            <TextInput
+                                keyboardType="number-pad"
+                                onFocus={() => setProtein('')}
+                                onChangeText={setProtein}
+                                textAlign="center"
+                                value={String(protein)}
+                                className="font-[ebold] text-xl text-gray-800 w-full"
+                            />
                         </View>
-                        <TextInput keyboardType="number-pad" onFocus={() => {
-                            setKcal('')
-                        }} onChangeText={(e) => {
 
-                            setKcal(e)
-                        }} textAlign="center" value={String(kcal)} className="font-[ebold] w-[60px] text-xl text-gray-700 border-b-1 border-gray-300 p-2 rounded-2xl"></TextInput>
+                        <View className="flex-1 py-4 items-center bg-gray-50 border border-gray-100 rounded-2xl">
+                            <Text className="font-[ebold] text-xs text-gray-500 uppercase tracking-wider mb-1">Carbs</Text>
+                            <TextInput
+                                keyboardType="number-pad"
+                                onFocus={() => setCarbs('')}
+                                onChangeText={setCarbs}
+                                textAlign="center"
+                                value={String(carbs)}
+                                className="font-[ebold] text-xl text-gray-800 w-full"
+                            />
+                        </View>
+
+                        <View className="flex-1 py-4 items-center bg-gray-50 border border-gray-100 rounded-2xl">
+                            <Text className="font-[ebold] text-xs text-gray-500 uppercase tracking-wider mb-1">Fat</Text>
+                            <TextInput
+                                keyboardType="number-pad"
+                                onFocus={() => setFat('')}
+                                onChangeText={setFat}
+                                textAlign="center"
+                                value={String(fat)}
+                                className="font-[ebold] text-xl text-gray-800 w-full"
+                            />
+                        </View>
                     </View>
 
-                    <View className="w-full flex flex-row gap-3 mt-3">
-                        {/* Protein */}
-                        <View className="flex-1 px-4 py-4 flex flex-col items-center border border-gray-300 rounded-2xl">
-                            <Text className="font-[ebold] text-sm text-gray-500">Protein</Text>
-                            <TextInput keyboardType="number-pad" onFocus={() => {
-                                setProtein('')
-                            }} onChangeText={(e) => {
+                    {/* กลุ่มปุ่มอัปเดตและยกเลิก (ดันลงล่างอัตโนมัติด้วย mt-auto) */}
+                    <View className="mt-auto mb-10 gap-3">
+                        <TouchableOpacity
+                            activeOpacity={0.8}
+                            onPress={async () => {
+                                let f = new Food()
+                                let res = await f.updateFood(Number(id), name, Number(portion), Number(kcal), Number(protein), Number(carbs), Number(fat))
+                                if (res.data) {
+                                    router.replace("/home")
+                                }
+                            }}
+                            className="w-full rounded-2xl py-4 items-center justify-center bg-green-600 shadow-sm shadow-green-300"
+                        >
+                            <Text className="text-white font-[ebold] text-lg tracking-wide">
+                                Update Food
+                            </Text>
+                        </TouchableOpacity>
 
-                                setProtein(e)
-                            }} textAlign="center" value={String(protein)} className="font-[ebold] mt-1 w-[60px] text-xl text-gray-700 border-b-1 border-gray-300 p-2 rounded-2xl"></TextInput>
-                        </View>
-
-                        {/* Carbs */}
-                        <View className="flex-1 px-4 py-4 flex flex-col items-center border border-gray-300 rounded-2xl">
-                            <Text className="font-[ebold] text-sm text-gray-500">Carbs</Text>
-                            <TextInput keyboardType="number-pad" onFocus={() => {
-                                setCarbs('')
-                            }} onChangeText={(e) => {
-
-                                setCarbs(e)
-                            }} textAlign="center" value={String(carbs)} className="font-[ebold] mt-1 w-[60px] text-xl text-gray-700 border-b-1 border-gray-300 p-2 rounded-2xl"></TextInput>
-                        </View>
-
-                        {/* Fat */}
-                        <View className="flex-1 px-4 py-4 flex flex-col items-center border border-gray-300 rounded-2xl">
-                            <Text className="font-[ebold] text-sm text-gray-500">Fat</Text>
-                            <TextInput keyboardType="number-pad" onFocus={() => {
-                                setFat('')
-                            }} onChangeText={(e) => {
-
-                                setFat(e)
-                            }} textAlign="center" value={String(fat)} className="font-[ebold] mt-1 w-[60px] text-xl text-gray-700 border-b-1 border-gray-300 p-2 rounded-2xl"></TextInput>
-                        </View>
-
-
+                        <TouchableOpacity
+                            activeOpacity={0.8}
+                            onPress={() => router.back()}
+                            className="w-full rounded-2xl py-4 items-center justify-center bg-gray-100"
+                        >
+                            <Text className="text-gray-600 font-[ebold] text-lg tracking-wide">
+                                Cancel
+                            </Text>
+                        </TouchableOpacity>
                     </View>
 
-                </View>
-                <View className="w-full items-center flex-1">
-                    <TouchableOpacity
-                        onPress={async () => {
-                            let f = new Food()
-
-                            let res = await f.updateFood(Number(id), name, Number(portion), Number(kcal), Number(protein), Number(carbs), Number(fat))
-
-                            if (res.data) {
-                                router.replace("/home")
-                            }
-                        }}
-
-                        activeOpacity={0.85}
-                        className="w-[80%] rounded-2xl py-3 items-center justify-center bg-purple-200 border border-purple-300 absolute bottom-40"
-                    >
-                        <Text className="text-purple-500 font-[ebold] text-base text-[20px] tracking-wide">
-                            Update
-                        </Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        onPress={() => {
-                            router.back()
-                        }}
-                        activeOpacity={0.85}
-                        className="w-[80%] rounded-2xl py-3 items-center justify-center bg-orange-600/10 border-orange-200 border absolute bottom-20"
-                    >
-                        <Text className="text-orange-500 font-[ebold] text-base text-[20px] tracking-wide">
-                            Cancel
-                        </Text>
-                    </TouchableOpacity>
                 </View>
             </View>
         </TouchableWithoutFeedback>
