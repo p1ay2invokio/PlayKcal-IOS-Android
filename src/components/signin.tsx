@@ -42,7 +42,7 @@ const Signin = () => {
     }
 
 
-    let { sex, dob, fast, weight, height, goal, targetWeight } = useMeasureStore()
+    let { sex, dob, fast, weight, height } = useMeasureStore()
 
 
     useEffect(() => {
