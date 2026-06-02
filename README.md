@@ -4,14 +4,18 @@ Your nutrition sidekick that makes calorie tracking effortless. 🥗✨
 
 PlayKcal helps you log meals, track calories, and understand your nutrition — all in a simple, focused mobile app.
 
-<img src="./screenshots/11.jpg" alt="Screenshot 1" width="200" height="450" />
-<img src="./screenshots/22.jpg" alt="Screenshot 2" width="200" height="450" />
-<img src="./screenshots/33.jpg" alt="Screenshot 2" width="200" height="450" />
-<img src="./screenshots/44.jpg" alt="Screenshot 1" width="200" height="450" />
-<img src="./screenshots/55.jpg" alt="Screenshot 2" width="200" height="450" />
-<img src="./screenshots/66.jpg" alt="Screenshot 2" width="200" height="450" />
-<img src="./screenshots/77.jpg" alt="Screenshot 2" width="200" height="450" />
-<img src="./screenshots/88.jpg" alt="Screenshot 2" width="200" height="450" />
+<p align="left">
+  <img src="./screenshots/11.jpg" alt="1" width="200" height="450" />
+  <img src="./screenshots/22.jpg" alt="2" width="200" height="450" />
+  <img src="./screenshots/33.jpg" alt="3" width="200" height="450" />
+  <br />
+  <img src="./screenshots/44.jpg" alt="4" width="200" height="450" />
+  <img src="./screenshots/55.jpg" alt="5" width="200" height="450" />
+  <img src="./screenshots/66.jpg" alt="6" width="200" height="450" />
+  <br />
+  <img src="./screenshots/77.jpg" alt="7" width="200" height="450" />
+  <img src="./screenshots/88.jpg" alt="8" width="200" height="450" />
+</p>
 
 ---
 
