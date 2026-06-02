@@ -16,7 +16,8 @@
         "com.apple.developer.applesignin": [
           "Default"
         ]
-      }
+      },
+      "supportsTablet": false
     },
     "android": {
       "adaptiveIcon": {

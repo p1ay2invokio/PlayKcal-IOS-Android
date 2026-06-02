@@ -4,6 +4,7 @@ import { router, useLocalSearchParams } from "expo-router"
 import Back from "@/components/back"
 import { Food } from "@/class/food.class"
 import { Excercise } from "@/class/excercise.class"
+import Loading from "@/components/loading"
 
 const Exercise = () => {
     const INTENSITY = ["chill", "normal", "tired"]
@@ -16,6 +17,9 @@ const Exercise = () => {
         duration: 0,
     })
 
+
+    let [loading, setLoading] = useState(false)
+
     let { id } = useLocalSearchParams()
 
     const fields = [
@@ -26,74 +30,132 @@ const Exercise = () => {
     console.log("man : ", id)
 
     return (
-        <ScrollView className="flex-1 bg-white px-5 pt-20">
-            <View className="flex flex-row gap-2 mb-5">
-                <Back></Back>
-                <Text className="font-[ebold] text-xl">Manually Add Food</Text>
-            </View>
 
-            {fields.map((field: any, index) => (
-                <View key={field.key} className="mb-4">
-                    <Text className="text-lg text-gray-600 mb-1 font-[ebold]">
-                        {field.label}
-                    </Text>
-                    <TextInput
-                        className="border border-gray-300 rounded-xl font-[emedium] px-4 py-3 text-base text-gray-800 bg-gray-50"
-                        placeholder={field.placeholder}
-                        placeholderTextColor="#9CA3AF"
-                        keyboardType={field.keyboardType}
-                        value={form[field.key]}
-                        onChangeText={(text) =>
-                            setForm((prev: any) => ({ ...prev, [field.key]: text }))
-                        }
-                    />
+        <View className="flex-1">
+
+            {loading ? <Loading>
+
+            </Loading> : null}
+
+
+            <ScrollView
+                className="flex-1 bg-[#F8FAF7]"
+                contentContainerStyle={{ paddingBottom: 40 }}
+                showsVerticalScrollIndicator={false}
+            >
+                {/* Header */}
+                <View className="bg-white px-5 pb-5 shadow-sm" style={{ paddingTop: 56 }}>
+                    <View className="flex-row items-center gap-3">
+                        <Back />
+                        <Text className="font-[ebold] text-2xl text-gray-900">
+                            Add Exercise
+                        </Text>
+                    </View>
                 </View>
-            ))}
 
-            {/* Intensity Toggle */}
-            <View className="flex-row gap-2">
-                {INTENSITY.map((level) => (
+                <View className="px-5 pt-6">
+                    {/* Fields Card */}
+                    <View className="bg-white rounded-2xl p-5 shadow-sm mb-4 gap-4">
+                        <Text className="font-[ebold] text-xs text-green-600 uppercase">
+                            Exercise Details
+                        </Text>
+                        {fields.map((field: any) => (
+                            <View key={field.key}>
+                                <Text
+                                    className="text-sm font-[ebold] text-gray-500"
+                                    style={{ marginBottom: 6 }}
+                                >
+                                    {field.label}
+                                </Text>
+                                <TextInput
+                                    style={{
+                                        backgroundColor: '#F9FAFB',
+                                        borderWidth: 1,
+                                        borderColor: '#F3F4F6',
+                                        borderRadius: 12,
+                                        paddingHorizontal: 16,
+                                        paddingVertical: 12,
+                                        fontSize: 16,
+                                        color: '#1F2937',
+                                        fontFamily: 'emedium',
+                                    }}
+                                    placeholder={field.placeholder}
+                                    placeholderTextColor="#C4C9C2"
+                                    keyboardType={field.keyboardType}
+                                    value={form[field.key]}
+                                    onChangeText={(text) =>
+                                        setForm((prev: any) => ({ ...prev, [field.key]: text }))
+                                    }
+                                />
+                            </View>
+                        ))}
+                    </View>
+
+                    {/* Intensity Card */}
+                    <View className="bg-white rounded-2xl p-5 shadow-sm mb-6">
+                        <Text className="font-[ebold] text-xs text-green-600 uppercase" style={{ marginBottom: 14 }}>
+                            Intensity
+                        </Text>
+                        <View className="flex-row gap-2">
+                            {INTENSITY.map((level) => (
+                                <TouchableOpacity
+                                    key={level}
+                                    onPress={() => setIntensity(level)}
+                                    className="flex-1 rounded-xl items-center"
+                                    style={{
+                                        paddingVertical: 12,
+                                        backgroundColor: intensity === level ? '#A855F7' : '#F9FAFB',
+                                        borderWidth: 1,
+                                        borderColor: intensity === level ? '#A855F7' : '#F3F4F6',
+                                    }}
+                                >
+                                    <Text style={{
+                                        fontFamily: 'ebold',
+                                        fontSize: 13,
+                                        color: intensity === level ? '#FFFFFF' : '#6B7280',
+                                    }}>
+                                        {level}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    </View>
+
+                    {/* Save Button */}
                     <TouchableOpacity
-                        key={level}
-                        onPress={() => setIntensity(level)}
-                        className={`flex-1 py-3 rounded-xl items-center border ${intensity === level
-                            ? "bg-purple-500 border-purple-500"
-                            : "bg-gray-50 border-gray-200"
-                            }`}
+                        activeOpacity={0.85}
+                        onPress={async () => {
+                            if (form.activity && form.duration && intensity) {
+                                setLoading(true)
+                                let e = new Excercise()
+                                let res = await e.addEx(form.activity, form.duration, intensity, Number(id))
+
+
+                                if (res.statusCode === 201) {
+                                    setLoading(false)
+                                    router.replace('/home')
+                                }
+                            } else {
+                                Alert.alert("ข้อมูลไม่ครบถ้วน")
+                            }
+                        }}
+                        className="bg-green-500 rounded-2xl items-center"
+                        style={{
+                            paddingVertical: 16,
+                            shadowColor: '#22c55e',
+                            shadowOffset: { width: 0, height: 4 },
+                            shadowOpacity: 0.3,
+                            shadowRadius: 8,
+                            elevation: 6,
+                        }}
                     >
-                        <Text className={`font-[ebold] text-sm ${intensity === level ? "text-white" : "text-gray-500"
-                            }`}>
-                            {level}
+                        <Text style={{ color: 'white', fontFamily: 'ebold', fontSize: 18 }}>
+                            Save Exercise
                         </Text>
                     </TouchableOpacity>
-                ))}
-            </View>
-
-            <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={async () => {
-                    if (form.activity && form.duration && intensity) {
-                        let e = new Excercise()
-
-                        console.log("Adding exercise with: ", form.activity, form.duration, intensity, id)
-                        let res = await e.addEx(form.activity, form.duration, intensity, Number(id))
-
-                        if (res.statusCode === 201) {
-                            router.replace('/home')
-                        }
-                    } else {
-                        Alert.alert("ข้อมูลไม่ครบถ้วน")
-                    }
-                }}
-                className="mt-4 mb-10">
-                <Text
-                    className="bg-green-500 text-white text-center py-4 rounded-xl text-xl font-[ebold] overflow-hidden"
-
-                >
-                    Save
-                </Text>
-            </TouchableOpacity>
-        </ScrollView>
+                </View>
+            </ScrollView>
+        </View>
     )
 }
 

@@ -1,4 +1,4 @@
-import { Alert, ScrollView, Text, Touchable, TouchableOpacity, View } from "react-native"
+import { Alert, Linking, Pressable, ScrollView, Text, Touchable, TouchableOpacity, View } from "react-native"
 import GaugeCircle from "../../components/gaugecircle"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { Image } from "expo-image"
@@ -17,6 +17,7 @@ import { public_url } from "../../../config"
 import * as Haptic from 'expo-haptics'
 import { useCurrentPickDate } from "@/stores/date.store"
 import { Excercise } from "@/class/excercise.class"
+import { Stat } from "@/class/stat.class"
 
 const Dashboard = () => {
 
@@ -49,12 +50,15 @@ const Dashboard = () => {
 
     let opacity = useSharedValue(0)
 
+
+
     let [dailyDetail, setDetail] = useState<any>([])
 
 
     let [user, setUser] = useState<any>(null)
-    let [selectDay, setSelectDay] = useState<any>(new Date())
+    let [userDetail, setUserDetail] = useState<any>(null)
     let { currentDate, setCurrentDate } = useCurrentPickDate()
+    let [selectDay, setSelectDay] = useState<any>(currentDate)
 
 
     useFocusEffect(useCallback(() => {
@@ -68,9 +72,14 @@ const Dashboard = () => {
 
             let user_data = await usr.getUserData()
 
+
+            console.log("USER DATA : ", user_data)
+
+            setUserDetail(user_data)
+
             let age = dayjs().diff(user_data.dob, 'year')
 
-            let convertDay = dayjs(currentDate).format("DD-MM-YYYY")
+            let convertDay = dayjs(currentDate).format("YYYY-MM-DD")
 
             let res = await usr.getDaily(convertDay)
 
@@ -115,9 +124,334 @@ const Dashboard = () => {
     const raw = ((dailyDetail.dailyCalories - dailyDetail.totalCalories + dailyDetail.totalBurned) / dailyDetail.dailyCalories) * 100;
     const remain = Math.min(100, Math.max(0, raw));
 
+
+
+    let [dotPosition, setDotPosition] = useState(50)
+
+    let [predictedWeight, setPredictedWeight] = useState(0)
+
+    let [loss, setLoss] = useState(0)
+
+
+    let [predictDays, setPredictDays] = useState(0)
+
+
+    let [forecastModal, setForecastModal] = useState(false)
+
+    let foreop = useSharedValue(0)
+
+    useEffect(() => {
+        (async () => {
+            if (!userDetail) return;
+
+
+
+            let s = new Stat()
+
+
+            let result = await s.predict()
+
+
+            console.log("Predict Days : ", result)
+
+
+
+            let total_week_cal = result.reduce((total: number, item: any) => total + item.value, 0)
+
+            setPredictDays(total_week_cal)
+
+            // console.log("Total Week Calories: ", total_week_cal)
+
+            const genderConstant = userDetail.sex === 'male' ? 5 : -161;
+
+
+            let age = dayjs().diff(userDetail.dob, 'year')
+
+            const bmr = (10 * userDetail.weight) + (6.25 * userDetail.height) - (5 * age) + genderConstant;
+
+            const tdee = bmr * 1.2;
+            const maintain_cal = tdee * 7
+
+            let deficit = total_week_cal - maintain_cal
+
+
+            let one_kg = 7700
+
+            let loss_res = deficit / one_kg
+
+            setLoss(loss_res)
+
+            const dotPosition_res = Math.max(0, Math.min(((loss_res + 1) / 2) * 100, 100));
+
+            setDotPosition(dotPosition_res);
+
+
+            console.log("PREDICT Weight : ", userDetail.weight)
+        })()
+    }, [userDetail])
+
+
+
+
+
     return (
-        <SafeAreaView style={{ flex: 1, alignItems: 'center', backgroundColor: 'white' }}>
-            <ScrollView style={{ flex: 1 }}>
+        <View style={{ flex: 1, alignItems: 'center', backgroundColor: 'white' }}>
+
+
+            <Animated.View style={useAnimatedStyle(() => ({ opacity: foreop.value }))} className="bg-[#000]/30 flex-1 justify-center items-center absolute top-0 left-0 w-full h-full z-10">
+                <View className="bg-white dark:bg-gray-900 w-[88%] rounded-3xl overflow-hidden border border-gray-100 dark:border-gray-800">
+
+                    {/* Header */}
+                    <View className="flex-row items-center gap-3 px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+                        <View className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-900/40 items-center justify-center">
+                            <Ionicons name="trending-up-outline" size={18} color="#059669" />
+                        </View>
+                        <View className="flex-1">
+                            <Text className="font-[ebold] text-sm text-gray-900 dark:text-white">
+                                Forecast Weight in 7 Days
+                            </Text>
+                            <Text className="font-[eregular] text-xs text-gray-400 mt-0.5">
+                                How this estimate is calculated
+                            </Text>
+                        </View>
+
+
+                        <TouchableOpacity onPress={() => {
+                            console.log("Close forecast modal")
+                            foreop.value = withTiming(0, { duration: 200 })
+                        }} className="p-4 bg-slate-100 rounded-full">
+                            <Ionicons name="close" size={20} color="#9ca3af" />
+                        </TouchableOpacity>
+                    </View>
+
+                    <ScrollView
+                        className="max-h-[520px]"
+                        contentContainerClassName="px-5 py-4 gap-5"
+                        showsVerticalScrollIndicator={false}
+                    >
+
+                        {/* Calorie Forecast Method */}
+                        <View className="gap-2">
+                            <View className="flex-row items-center gap-2">
+                                <Ionicons name="analytics-outline" size={14} color="#059669" />
+                                <Text className="font-[emedium] text-sm text-gray-800 dark:text-gray-100">
+                                    Calorie forecast method
+                                </Text>
+                            </View>
+                            <Text className="font-[eregular] text-xs text-gray-500 dark:text-gray-400 leading-5">
+                                Daily calorie forecasts use your recent records. Missing days are filled
+                                with the average of available days within the last 7 days.
+                            </Text>
+                            <Text className="font-[eregular] text-xs text-gray-500 dark:text-gray-400 leading-5">
+                                This assumes your eating habits will remain similar to recent behavior.
+                            </Text>
+                        </View>
+
+                        {/* Divider */}
+                        <View className="h-px bg-gray-100 dark:bg-gray-800" />
+
+                        {/* BMR Formula */}
+                        <View className="gap-2">
+                            <View className="flex-row items-center gap-2">
+                                <Ionicons name="calculator-outline" size={14} color="#059669" />
+                                <Text className="font-[emedium] text-sm text-gray-800 dark:text-gray-100">
+                                    BMR formula
+                                </Text>
+                                <View className="bg-gray-100 dark:bg-gray-800 rounded-full px-2 py-0.5">
+                                    <Text className="font-[eregular] text-[10px] text-gray-400">
+                                        Mifflin–St Jeor ²
+                                    </Text>
+                                </View>
+                            </View>
+
+                            {/* Male */}
+                            <View className="bg-emerald-50 dark:bg-emerald-900/25 rounded-2xl px-4 py-3">
+                                <Text className="font-[emedium] text-[10px] text-emerald-600 dark:text-emerald-400 tracking-widest uppercase mb-1">
+                                    Male
+                                </Text>
+                                <Text className="font-[eregular] text-xs text-emerald-900 dark:text-emerald-200 leading-5">
+                                    (10 × W) + (6.25 × H) − (5 × A) + 5
+                                </Text>
+                            </View>
+
+                            {/* Female */}
+                            <View className="bg-pink-50 dark:bg-pink-900/25 rounded-2xl px-4 py-3">
+                                <Text className="font-[emedium] text-[10px] text-pink-500 dark:text-pink-400 tracking-widest uppercase mb-1">
+                                    Female
+                                </Text>
+                                <Text className="font-[eregular] text-xs text-pink-900 dark:text-pink-200 leading-5">
+                                    (10 × W) + (6.25 × H) − (5 × A) − 161
+                                </Text>
+                            </View>
+
+                            <Text className="font-[eregular] text-[10px] text-gray-400 dark:text-gray-500">
+                                W = weight (kg) · H = height (cm) · A = age (yrs)
+                            </Text>
+                        </View>
+
+                        {/* Divider */}
+                        <View className="h-px bg-gray-100 dark:bg-gray-800" />
+
+                        {/* TDEE */}
+                        <View className="gap-2">
+                            <View className="flex-row items-center gap-2">
+                                <Ionicons name="flame-outline" size={14} color="#059669" />
+                                <Text className="font-[emedium] text-sm text-gray-800 dark:text-gray-100">
+                                    Maintenance calories (TDEE)
+                                </Text>
+                            </View>
+                            <View className="bg-gray-50 dark:bg-gray-800/60 rounded-2xl overflow-hidden">
+                                <View className="flex-row justify-between items-center px-4 py-3 border-b border-gray-100 dark:border-gray-700/50">
+                                    <Text className="font-[eregular] text-xs text-gray-500 dark:text-gray-400">
+                                        Daily (TDEE)
+                                    </Text>
+                                    <Text className="font-[emedium] text-xs text-gray-800 dark:text-gray-200">
+                                        BMR × 1.2
+                                    </Text>
+                                </View>
+                                <View className="flex-row justify-between items-center px-4 py-3">
+                                    <Text className="font-[eregular] text-xs text-gray-500 dark:text-gray-400">
+                                        Weekly maintenance
+                                    </Text>
+                                    <Text className="font-[emedium] text-xs text-gray-800 dark:text-gray-200">
+                                        TDEE × 7
+                                    </Text>
+                                </View>
+                            </View>
+                        </View>
+
+                        <View className="h-px bg-gray-100 dark:bg-gray-800" />
+
+
+                        <View className="gap-2">
+                            <View className="flex-row items-center gap-2">
+                                <Ionicons name="scale-outline" size={14} color="#059669" />
+                                <Text className="font-[emedium] text-sm text-gray-800 dark:text-gray-100">
+                                    Stat 7 day back
+                                </Text>
+                            </View>
+                            <View className="bg-gray-50 dark:bg-gray-800/60 rounded-2xl overflow-hidden">
+                                <View className="px-4 py-3 border-b border-gray-100 dark:border-gray-700/50">
+                                    <Text className="font-[emedium] text-xs text-gray-800 dark:text-gray-200">
+                                        Σ Weekly Calories = 14,050 kcal
+                                    </Text>
+                                    <Text className="font-[eregular] text-[10px] text-gray-500 dark:text-gray-400">
+                                        2,000 + 2,000 + 1,800 + 2,200 + 2,100 + 1,900 + 2,050
+                                    </Text>
+                                </View>
+                            </View>
+
+
+                            <View className="flex-row items-start gap-2 bg-amber-50 dark:bg-amber-900/20 rounded-2xl px-4 py-3">
+                                <Ionicons name="information-circle-outline" size={14} color="#d97706" style={{ marginTop: 1 }} />
+                                <Text className="font-[eregular] text-xs text-amber-700 dark:text-amber-300 leading-5 flex-1">
+                                    If a user has fewer than 7 days of records, the app will use the average of the available data to fill the missing days, assuming the user will maintain a similar eating pattern.
+                                </Text>
+                            </View>
+
+                            {/* Info callout */}
+                            <View className="flex-row items-start gap-2 bg-amber-50 dark:bg-amber-900/20 rounded-2xl px-4 py-3">
+                                <Ionicons name="information-circle-outline" size={14} color="#d97706" style={{ marginTop: 1 }} />
+                                <Text className="font-[eregular] text-xs text-amber-700 dark:text-amber-300 leading-5 flex-1">
+                                    7,700 kcal ≈ 1 kg body weight — a widely used clinical estimate ¹
+                                </Text>
+                            </View>
+                        </View>
+
+                        {/* Divider */}
+                        <View className="h-px bg-gray-100 dark:bg-gray-800" />
+
+                        {/* Weight Change */}
+                        <View className="gap-2">
+                            <View className="flex-row items-center gap-2">
+                                <Ionicons name="scale-outline" size={14} color="#059669" />
+                                <Text className="font-[emedium] text-sm text-gray-800 dark:text-gray-100">
+                                    Weight change estimation
+                                </Text>
+                            </View>
+                            <View className="bg-gray-50 dark:bg-gray-800/60 rounded-2xl overflow-hidden">
+                                <View className="px-4 py-3 border-b border-gray-100 dark:border-gray-700/50">
+                                    <Text className="font-[eregular] text-[10px] text-gray-400 mb-1">
+                                        Calorie balance
+                                    </Text>
+                                    <Text className="font-[emedium] text-xs text-gray-800 dark:text-gray-200">
+                                        Weekly Calories − Weekly maintenance
+                                    </Text>
+                                </View>
+                                <View className="px-4 py-3">
+                                    <Text className="font-[eregular] text-[10px] text-gray-400 mb-1">
+                                        Weight change (kg)
+                                    </Text>
+                                    <Text className="font-[emedium] text-xs text-gray-800 dark:text-gray-200">
+                                        Calorie balance ÷ 7,700
+                                    </Text>
+                                </View>
+                            </View>
+
+                            {/* Info callout */}
+                            <View className="flex-row items-start gap-2 bg-amber-50 dark:bg-amber-900/20 rounded-2xl px-4 py-3">
+                                <Ionicons name="information-circle-outline" size={14} color="#d97706" style={{ marginTop: 1 }} />
+                                <Text className="font-[eregular] text-xs text-amber-700 dark:text-amber-300 leading-5 flex-1">
+                                    7,700 kcal ≈ 1 kg body weight — a widely used clinical estimate ¹
+                                </Text>
+                            </View>
+                        </View>
+
+                        {/* Divider */}
+                        <View className="h-px bg-gray-100 dark:bg-gray-800" />
+
+                        {/* References */}
+                        <View className="gap-2">
+                            <Text className="font-[emedium] text-xs text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                                References
+                            </Text>
+                            <TouchableOpacity
+                                onPress={() => Linking.openURL('https://doi.org/10.1016/S0140-6736(11)60812-X')}
+                                activeOpacity={0.7}
+                            >
+                                <View className="flex-row items-start gap-2 bg-gray-50 dark:bg-gray-800/60 rounded-xl px-3 py-2.5">
+                                    <Text className="font-[emedium] text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5">
+                                        [1]
+                                    </Text>
+                                    <Text className="font-[eregular] text-[11px] text-gray-500 dark:text-gray-400 leading-[18px] flex-1">
+                                        Hall KD et al. Quantification of the effect of energy imbalance on bodyweight.{' '}
+                                        <Text className="italic">Lancet.</Text> 2011;378(9793):826–837
+                                    </Text>
+                                    <Ionicons name="open-outline" size={12} color="#9ca3af" style={{ marginTop: 2 }} />
+                                </View>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                onPress={() => Linking.openURL('https://doi.org/10.1093/ajcn/51.2.241')}
+                                activeOpacity={0.7}
+                            >
+                                <View className="flex-row items-start gap-2 bg-gray-50 dark:bg-gray-800/60 rounded-xl px-3 py-2.5">
+                                    <Text className="font-[emedium] text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5">
+                                        [2]
+                                    </Text>
+                                    <Text className="font-[eregular] text-[11px] text-gray-500 dark:text-gray-400 leading-[18px] flex-1">
+                                        Mifflin MD et al. A new predictive equation for resting energy expenditure.{' '}
+                                        <Text className="italic">Am J Clin Nutr.</Text> 1990;51(2):241–247
+                                    </Text>
+                                    <Ionicons name="open-outline" size={12} color="#9ca3af" style={{ marginTop: 2 }} />
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Disclaimer */}
+                        <View className="flex-row items-start gap-2 pb-1">
+                            <Ionicons name="alert-circle-outline" size={13} color="#d1d5db" style={{ marginTop: 1 }} />
+                            <Text className="font-[eregular] text-[10px] text-gray-300 dark:text-gray-600 leading-[16px] flex-1">
+                                For wellness and educational purposes only. Actual results may vary based on activity,
+                                metabolism, hydration, and other factors. Not intended as medical advice or diagnosis.
+                            </Text>
+                        </View>
+
+                    </ScrollView>
+                </View>
+            </Animated.View>
+
+            <ScrollView style={{ flex: 1, paddingTop: 50 }}>
                 <View className="w-full h-[70px] justify-between flex-row px-5">
 
                     <View className="flex-row items-center gap-2">
@@ -132,7 +466,7 @@ const Dashboard = () => {
 
 
                     <View className="flex flex-row items-center gap-2">
-                        <TouchableOpacity className="p-4 bg-slate-100 rounded-full" activeOpacity={0.7} onPress={() => {
+                        <TouchableOpacity className="p-3 bg-slate-200 rounded-2xl" activeOpacity={0.7} onPress={() => {
                             opacity.value = withTiming(calendarModal ? 0 : 1, { duration: 200 })
                             setCalendarModal(!calendarModal)
                         }}>
@@ -147,6 +481,116 @@ const Dashboard = () => {
 
                 </View>
 
+
+                <View className="w-full bg-white rounded-3xl p-6 my-4 flex items-center justify-center">
+
+
+                    <View className="w-full flex gap-0 justify-center items-center border border-gray-200 rounded-3xl px-5 py-3 shadow shadow-sm shadow-gray-200">
+                        <View className="flex flex-row items-center gap-2 mb-10">
+                            {/* Header Title */}
+                            <View className="flex justify-center items-center">
+                                <Text className="font-[ebold] text-gray-800 text-lg">
+                                    Forecast Weight
+                                </Text>
+                                <Text className="font-[eregular] mt-[-5px] text-gray-400 text-sm">
+                                    Based on Your Last 7 Days of Records
+                                </Text>
+                            </View>
+
+
+
+                            <TouchableOpacity className="absolute right-[-55px]" activeOpacity={0.7} onPress={() => {
+                                foreop.value = withTiming(1, { duration: 200 })
+                            }}>
+                                <Ionicons name="information-circle-outline" size={20} color="gray" />
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Progress Bar Container */}
+                        <View className="w-full my-2 relative mb-4">
+
+                            {/* Colored Bar */}
+                            <View className="w-full h-[12px] bg-gray-200 flex flex-row rounded-full overflow-hidden">
+                                <View className="w-[25%] h-full bg-green-400" />
+                                <View className="w-[25%] h-full bg-blue-400" />
+                                <View className="w-[25%] h-full bg-orange-400" />
+                                <View className="w-[25%] h-full bg-red-400" />
+                            </View>
+
+                            {/* Tooltip showing the exact loss value */}
+                            {predictDays > 0 && (
+                                <View
+                                    className="absolute bg-gray-800 rounded-md px-2 py-1 items-center justify-center shadow-sm"
+                                    style={{
+                                        left: `${dotPosition}%`,
+                                        top: -32,
+                                        transform: [{ translateX: -16 }], // ปรับให้กึ่งกลาง (ครึ่งหนึ่งของความกว้างโดยประมาณ)
+                                    }}
+                                >
+                                    <Text className="font-[ebold] text-white text-sm">
+                                        {loss > 0 ? '+' : ''}{loss.toFixed(2)}
+                                    </Text>
+                                </View>
+                            )}
+
+                            {/* Indicator Dot */}
+                            <View
+                                className="absolute w-5 h-5 bg-white border-[3px] border-gray-800 rounded-full"
+                                style={{
+                                    left: `${predictDays > 0 ? dotPosition : 50}%`,
+                                    top: -4,
+                                    transform: [{ translateX: -10 }], // -10 เพื่อให้จุดอยู่กึ่งกลางพอดี (width 20 / 2)
+                                    shadowColor: '#000',
+                                    shadowOffset: { width: 0, height: 2 },
+                                    shadowOpacity: 0.15,
+                                    shadowRadius: 3,
+                                    elevation: 4,
+                                }}
+                            />
+
+                            {/* Legend labels */}
+                            <View className="flex flex-row justify-between mt-3 px-0">
+                                {[-1, -0.5, 0, 0.5, 1].map((val) => (
+                                    <View key={val} className="w-[20%] items-center" style={{ width: '20%' }}>
+                                        {/* การจัดให้อยู่ตรงกลางของแต่ละจุดแบ่ง */}
+                                        <Text className="font-[eregular] text-sm text-gray-400">
+                                            {val > 0 ? `+${val}` : val}
+                                        </Text>
+                                    </View>
+                                ))}
+                            </View>
+                        </View>
+
+                        {/* Footer Result / Info */}
+                        <View className="w-full">
+                            {predictDays > 0 ? (
+                                userDetail ? (
+                                    <View className="bg-gray-50 rounded-2xl p-4 items-center w-full">
+                                        <Text className="font-[eregular] text-gray-500 text-sm mb-1">
+                                            Expected on {dayjs().add(7, 'day').format("DD MMM YYYY")}
+                                        </Text>
+                                        <View className="flex flex-row items-baseline">
+                                            <Text className="font-[ebold] text-gray-800 text-2xl">
+                                                {Number(userDetail.weight + loss).toFixed(2)}
+                                            </Text>
+                                            <Text className="font-[eregular] text-gray-500 text-sm ml-1">kg</Text>
+                                        </View>
+                                        <Text className="font-[eregular] text-gray-400 text-sm mt-1">
+                                            (Current weight: {userDetail.weight} kg)
+                                        </Text>
+                                    </View>
+                                ) : null
+                            ) : (
+                                <View className="bg-red-50 rounded-2xl p-4 items-center w-full">
+                                    <Text className="font-[eregular] text-red-500 text-sm text-center">
+                                        Calories of the week must be more than 0
+                                    </Text>
+                                </View>
+                            )}
+                        </View>
+                    </View>
+                </View>
+
                 <Animated.View style={[useAnimatedStyle(() => ({ opacity: opacity.value }))]} className="absolute top-16 left-[30px] border border-gray-200 shadow bg-white z-[1] rounded-xl">
                     <DatePicker style={{ backgroundColor: 'white', borderRadius: 12 }} display="inline" value={selectDay} onChange={(e, d) => {
                         setCurrentDate(d)
@@ -154,175 +598,256 @@ const Dashboard = () => {
                     }} />
                 </Animated.View>
 
-                <View className=" p-3 justify-center items-center flex flex-row gap-10">
-                    <View className="flex justify-center items-center w-[80px]">
-                        <Text className="font-[esemibold]">Consumed</Text>
-                        <Text className="font-[esemibold]">{dailyDetail.totalCalories}</Text>
+                <View className="w-full bg-white rounded-3xl p-5 mt-[-20px] my-4 flex flex-row justify-between items-center">
+
+                    {/* Left Side: Calories Gauge */}
+                    <View className="w-[45%] flex flex-col justify-center items-center">
+                        {/* Main Gauge */}
+                        <GaugeCircle
+                            size={130}
+                            value={remain}
+                            startAngle={-210}
+                            sweepAngle={240}
+                            strokeWidth={12}
+                            label={`${(dailyDetail.dailyCalories - dailyDetail.totalCalories) + dailyDetail.totalBurned + dailyDetail.appleBurned}`}
+                            color="#10b981"
+                        />
+                        <Text className="font-[ebold] text-gray-700 mt-[-20px] text-[14px]">Remaining</Text>
+                        <Text className="font-[eregular] text-gray-400 text-[12px] mb-3">kcal</Text>
+
+                        {/* Consumed & Burned Stats */}
+                        <View className="flex flex-row w-full justify-between px-2 mt-1">
+                            <View className="flex flex-col items-center">
+                                <Text className="font-[eregular] text-gray-400 text-sm">Consumed</Text>
+                                <Text className="font-[esemibold] text-gray-700 text-md">{dailyDetail.totalCalories}</Text>
+                            </View>
+                            <View className="w-[1px] bg-gray-200 h-full mx-2"></View>
+                            <View className="flex flex-col items-center">
+                                <Text className="font-[eregular] text-gray-400 text-sm">Burned</Text>
+                                <Text className="font-[esemibold] text-gray-700 text-md">{dailyDetail.totalBurned + dailyDetail.appleBurned}</Text>
+                            </View>
+                        </View>
                     </View>
 
-                    <View>
-                        <GaugeCircle size={90} value={remain} startAngle={-210} sweepAngle={240} strokeWidth={10} label={`${(dailyDetail.dailyCalories - dailyDetail.totalCalories) + dailyDetail.totalBurned + dailyDetail.appleBurned}`} color="#10b981"></GaugeCircle>
-                        <Text className="font-[emedium] text-gray-500 mt-[-10] text-[12px]">Remaining Kcal</Text>
-                    </View>
+                    {/* Right Side: Macros Progress Bars */}
+                    <View className="w-[50%] flex flex-col gap-4">
 
+                        {/* Protein */}
+                        <View className="w-full">
+                            <View className="flex flex-row justify-between items-end mb-1">
+                                <View className="flex flex-row items-center gap-2">
+                                    <Image style={{ width: 30, height: 30 }} source={require("../../../assets/images/protein.png")} resizeMode="contain" />
+                                    <Text className="font-[esemibold] text-gray-700 text-md">Protein</Text>
+                                </View>
+                                <Text className="font-[eregular] text-gray-500 text-[11px]">
+                                    {dailyDetail.totalProtein} / {dailyDetail.dailyProtein}g
+                                </Text>
+                            </View>
+                            <View className="w-full h-[8px] bg-gray-100 rounded-full overflow-hidden">
+                                <View
+                                    className="h-full bg-red-600 rounded-full"
+                                    style={{ width: `${Math.min((dailyDetail.totalProtein / (dailyDetail.dailyProtein || 1)) * 100, 100)}%` }}
+                                />
+                            </View>
+                        </View>
 
-                    <View className="flex justify-center items-center w-[80px]">
-                        <Text className="font-[esemibold]">Burned</Text>
-                        <Text className="font-[esemibold]">{dailyDetail.totalBurned + dailyDetail.appleBurned}</Text>
+                        {/* Carbs */}
+                        <View className="w-full">
+                            <View className="flex flex-row justify-between items-end mb-1">
+                                <View className="flex flex-row items-center gap-2">
+                                    <Image style={{ width: 30, height: 30 }} source={require("../../../assets/images/rices.png")} resizeMode="contain" />
+                                    <Text className="font-[esemibold] text-gray-700 text-md">Carbs</Text>
+                                </View>
+                                <Text className="font-[eregular] text-gray-500 text-[11px]">
+                                    {dailyDetail.totalCarbs} / {dailyDetail.dailyCarbs}g
+                                </Text>
+                            </View>
+                            <View className="w-full h-[8px] bg-gray-100 rounded-full overflow-hidden">
+                                <View
+                                    className="h-full bg-sky-500 rounded-full"
+                                    style={{ width: `${Math.min((dailyDetail.totalCarbs / (dailyDetail.dailyCarbs || 1)) * 100, 100)}%` }}
+                                />
+                            </View>
+                        </View>
+
+                        {/* Fat */}
+                        <View className="w-full">
+                            <View className="flex flex-row justify-between items-end mb-1">
+                                <View className="flex flex-row items-center gap-2">
+                                    <Image style={{ width: 30, height: 30 }} source={require("../../../assets/images/cheese.png")} resizeMode="contain" />
+                                    <Text className="font-[esemibold] text-gray-700 text-md">Fat</Text>
+                                </View>
+                                <Text className="font-[eregular] text-gray-500 text-[11px]">
+                                    {dailyDetail.totalFat} / {dailyDetail.dailyFat}g
+                                </Text>
+                            </View>
+                            <View className="w-full h-[8px] bg-gray-100 rounded-full overflow-hidden">
+                                <View
+                                    className="h-full bg-yellow-400 rounded-full"
+                                    style={{ width: `${Math.min((dailyDetail.totalFat / (dailyDetail.dailyFat || 1)) * 100, 100)}%` }}
+                                />
+                            </View>
+                        </View>
+
                     </View>
                 </View>
 
-
-                <View className="flex-row gap-5 mt-0 border-gray-100 p-3 rounded-[18px] justify-center items-center">
-                    <View className="flex justify-center items-center gap-3">
-                        <GaugeCircle size={90} value={(((dailyDetail.dailyProtein - dailyDetail.totalProtein) / dailyDetail.dailyProtein) * 100) < 0 ? 0 : (((dailyDetail.dailyProtein - dailyDetail.totalProtein) / dailyDetail.dailyProtein) * 100)} strokeWidth={10} label={`${dailyDetail.dailyProtein - dailyDetail.totalProtein}`} color="#dc2626" sublabel="g"></GaugeCircle>
-                        <View className="flex justify-center items-center">
-                            <View className="flex flex-row items-center mb-[-10px] items-center">
-                                <Image style={{ width: 40, height: 40 }} source={require("../../../assets/images/protein.png")} className="w-full h-full object-cover" />
-                                <Text className="font-[emedium]">Protien</Text>
-                            </View>
-                            <Text className="font-[emedium] text-gray-400 text-sm">({dailyDetail.totalProtein}/{dailyDetail.dailyProtein})</Text>
-                        </View>
+                <View className="flex-1 w-full bg-white pb-40">
+                    {/* Header Section */}
+                    <View className="mt-6 flex flex-row gap-4 items-center w-full justify-center px-6">
+                        <View className="flex-1 h-[1px] bg-gray-200" />
+                        <Text className="font-[esemibold] text-gray-400 text-base tracking-wide">Food and Activities</Text>
+                        <View className="flex-1 h-[1px] bg-gray-200" />
                     </View>
-                    <View className="flex justify-center items-center gap-3">
-                        <GaugeCircle size={90} value={(((dailyDetail.dailyCarbs - dailyDetail.totalCarbs) / dailyDetail.dailyCarbs) * 100) < 0 ? 0 : (((dailyDetail.dailyCarbs - dailyDetail.totalCarbs) / dailyDetail.dailyCarbs) * 100)} strokeWidth={10} label={`${dailyDetail.dailyCarbs - dailyDetail.totalCarbs}`} color="#0ea5e9"></GaugeCircle>
-                        <View className="flex justify-center items-center">
-                            <View className="flex flex-row items-center mb-[0px] gap-0">
-                                <Image style={{ width: 40, height: 30 }} source={require("../../../assets/images/rices.png")} className="w-full h-full object-cover" />
-                                <Text className="font-[emedium]">Carbs</Text>
-                            </View>
-                            <Text className="font-[emedium] text-gray-400 text-sm">({dailyDetail.totalCarbs}/{dailyDetail.dailyCarbs})</Text>
-                        </View>
+
+                    <View className="w-full flex items-center justify-center mt-2 mb-4">
+                        <Text className="font-[medium] text-sm text-gray-500 bg-gray-200/50 px-4 py-1 rounded-full">
+                            {dayjs(currentDate).format("DD MMM YYYY")}
+                        </Text>
                     </View>
-                    <View className="flex justify-center items-center gap-3">
-                        <GaugeCircle size={90} value={(((dailyDetail.dailyFat - dailyDetail.totalFat) / dailyDetail.dailyFat) * 100) < 0 ? 0 : (((dailyDetail.dailyFat - dailyDetail.totalFat) / dailyDetail.dailyFat) * 100)} strokeWidth={10} label={`${dailyDetail.dailyFat - dailyDetail.totalFat}`} color="#facc15"></GaugeCircle>
-                        <View className="flex justify-center items-center">
-                            <View className="flex flex-row items-center mb-[-5px] gap-1">
-                                <Image style={{ width: 40, height: 30 }} source={require("../../../assets/images/cheese.png")} className="w-full h-full object-cover" />
-                                <Text className="font-[emedium]">Fat</Text>
-                            </View>
-                            <Text className="font-[emedium] text-gray-400 text-sm">({dailyDetail.totalFat}/{dailyDetail.dailyFat})</Text>
-                        </View>
-                    </View>
-                </View>
 
-                <View className="mt-5 flex flex-row gap-5 items-center w-full justify-center">
-                    <View className="w-[80px] h-[1px] rounded-full bg-gray-200"></View>
-                    <Text className="font-[esemibold] text-gray-800">Food and Activities</Text>
-                    <View className="w-[80px] h-[1px] rounded-full bg-gray-200"></View>
-                </View>
-
-                <View className="w-full flex flex-row gap-2 items-center justify-center mt-5">
-                    <Text className="font-[eregular] text-sm text-gray-400">Date {dayjs(currentDate).format("DD-MM-YYYY")}</Text>
-                </View>
-
-
-                <View className="w-full bg-white px-7 py-3">
-
-                    {authorizationStatus === 2 && dailyDetail.appleStep || dailyDetail.appleKcal ? <View className="w-full mb-2 h-[100px] p-2 flex flex-row gap-5 bg-white border rounded-[12px] border-gray-200">
-                        <View className="w-[30%] h-full rounded-xl bg-transparent">
-                            <Image style={{ width: "100%", height: "100%", borderWidth: 1, borderColor: "#eee", borderRadius: 12 }} source={require("../../../assets/images/health.png")} className="w-full h-full object-cover" />
-                        </View>
-                        <View className="w-[calc(100%-40%)]">
-                            <View className="flex flex-row items-center justify-between">
-                                <Text className="text-xl font-[ebold] text-gray-800">Apple Health</Text>
-                                <Text className="font-[ebold] text-gray-400">{dayjs().format('HH:mm')}</Text>
-                            </View>
-                            <View className="flex flex-row gap-2 items-center">
-                                <Text className="font-[esemibold] text-gray-600 text-xl">{dailyDetail.appleStep} Steps</Text>
-                            </View>
-                            <View className="flex flex-row gap-2 items-center">
-                                <Text className="font-[esemibold] text-gray-400 text-xl">{dailyDetail.appleBurned} kcal</Text>
-                            </View>
-                        </View>
-                    </View> : null}
-
-                    <FlashList
-                        data={dailyDetail.exerciseLogs}
-                        renderItem={({ item }: any) => {
-                            return (
-                                <TouchableOpacity onPress={() => {
-                                    Haptic.impactAsync(Haptic.ImpactFeedbackStyle.Medium)
-
-                                    router.push(`/ex/${item.id}`)
-                                }} activeOpacity={0.9} className="w-full mb-2 h-[110px] p-2 flex flex-row gap-5 bg-white border rounded-[12px] border-gray-200">
-
-
-                                    <View className="w-[30%] h-full rounded-xl bg-gray-100 flex justify-center items-center">
-
-                                        {item.img ? <Image style={{ width: '100%', height: '100%', borderRadius: 12 }} source={{ uri: `${public_url}/foods/${item.img}` }}></Image> : <View className="flex justify-center items-center">
-                                            <Ionicons name="code-working" size={40} color="#ccc" />
-                                            <Text className="text-sm text-center text-gray-500 font-[ebold]">Image Not Available</Text>
-                                        </View>
-                                        }
-
+                    {/* Content Section */}
+                    <View className="w-full px-5 py-2">
+                        {/* Apple Health Card */}
+                        {authorizationStatus === 2 && (dailyDetail.appleStep || dailyDetail.appleKcal) ? (
+                            <View className="w-full mb-4 p-4 flex flex-row items-center bg-white border border-slate-100 rounded-2xl shadow-sm elevation-2">
+                                <View className="w-16 h-16 mr-4 rounded-xl overflow-hidden bg-gray-50 border border-slate-100">
+                                    <Image
+                                        source={require("../../../assets/images/apple-health.png")}
+                                        style={{ width: '100%', height: '100%' }}
+                                        resizeMode="cover"
+                                    />
+                                </View>
+                                <View className="flex-1">
+                                    <View className="flex flex-row items-center justify-between mb-1">
+                                        <Text className="text-lg font-[ebold] text-red-700">Apple Health</Text>
+                                        <Text className="font-[medium] text-sm text-gray-400">{dayjs().format('HH:mm')}</Text>
                                     </View>
-                                    <View className="w-[calc(100%-36%)]">
-                                        <View className="flex flex-row items-center justify-between">
-                                            <Text className="text-lg font-[medium] text-gray-700 line-clamp-1 w-[160px]">{item.name}</Text>
-                                            <Text className="font-[ebold] text-sm text-gray-400">{dayjs(item.createdAt).format("HH:mm")}</Text>
+                                    <View className="flex flex-row items-center justify-between mt-1">
+                                        <View className="flex flex-row items-center gap-1.5">
+                                            <Text className="font-[esemibold] text-gray-600 text-base">{dailyDetail.appleStep}</Text>
+                                            <Text className="font-[medium] text-gray-400 text-sm mt-0.5">Steps</Text>
                                         </View>
-                                        <View className="flex flex-row gap-1 items-center">
-                                            <Image style={{ width: 25, height: 25 }} source={require("../../../assets/images/running.png")} className="w-full h-full object-cover" />
-                                            <Text className={`font-[ebold] text-xl ${item.quantity <= 0 ? 'line-through text-gray-300' : 'text-emerald-500'}`}>{item.caloriesBurned} Kcal</Text>
+                                        <View className="flex flex-row items-center gap-1.5">
+                                            <Text className="font-[esemibold] text-orange-500 text-base">{dailyDetail.appleBurned}</Text>
+                                            <Text className="font-[medium] text-gray-400 text-sm mt-0.5">kcal</Text>
+                                        </View>
+                                    </View>
+                                </View>
+                            </View>
+                        ) : null}
+
+                        {/* Exercise Logs */}
+                        <FlashList
+                            data={dailyDetail.exerciseLogs}
+                            renderItem={({ item }: any) => (
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        Haptic.impactAsync(Haptic.ImpactFeedbackStyle.Medium)
+                                        router.push(`/ex/${item.id}`)
+                                    }}
+                                    activeOpacity={0.7}
+                                    className="w-full mb-3 p-3 flex flex-row items-center bg-white border border-slate-100 rounded-2xl shadow-sm elevation-1"
+                                >
+                                    <View className="w-20 h-20 mr-4 rounded-xl bg-slate-50 flex justify-center items-center overflow-hidden border border-slate-100">
+                                        {item.img ? (
+                                            <Image
+                                                source={{ uri: `${public_url}/foods/${item.img}` }}
+                                                style={{ width: '100%', height: '100%' }}
+                                                resizeMode="cover"
+                                            />
+                                        ) : (
+                                            <View className="flex w-full h-full items-center justify-center">
+                                                <Image
+                                                    source={require('../../../assets/images/running2.png')}
+                                                    style={{ width: '100%', height: '100%' }}
+                                                    resizeMode="cover"
+                                                />
+                                            </View>
+                                        )}
+                                    </View>
+                                    <View className="flex-1 justify-center">
+                                        <View className="flex flex-row items-start justify-between mb-2">
+                                            <Text numberOfLines={1} className="text-base text-xl font-[esemibold] text-gray-700 flex-1 pr-2">
+                                                {item.name}
+                                            </Text>
+                                            <Text className="font-[medium] text-sm text-gray-400 mt-1">
+                                                {dayjs(item.createdAt).format("HH:mm")}
+                                            </Text>
+                                        </View>
+                                        <View className="flex flex-row gap-1.5 items-center">
+                                            <Image source={require("../../../assets/images/running.png")} style={{ width: 24, height: 24 }} resizeMode="contain" />
+                                            <Text className={`font-[ebold] text-base ${item.quantity <= 0 ? 'line-through text-gray-300' : 'text-emerald-500'}`}></Text>
+                                            <Text className="font-[medium] ml-[-10px] text-emerald-500 text-xl">{item.caloriesBurned} Kcal</Text>
                                         </View>
                                     </View>
                                 </TouchableOpacity>
-                            )
-                        }}>
+                            )}
+                        />
 
-                    </FlashList>
-
-                    <FlashList
-                        data={dailyDetail.foodLogs}
-                        renderItem={({ item }: any) => {
-                            return (
-                                <TouchableOpacity onPress={() => {
-                                    Haptic.impactAsync(Haptic.ImpactFeedbackStyle.Medium)
-
-                                    router.push(`/product/${item.id}`)
-                                }} activeOpacity={0.9} className="w-full mb-2 h-[110px] p-2 flex flex-row gap-5 bg-white border rounded-[12px] border-gray-200">
-
-
-                                    <View className="w-[30%] h-full rounded-xl bg-gray-100 flex justify-center items-center">
-
-                                        {item.img ? <Image style={{ width: '100%', height: '100%', borderRadius: 12 }} source={{ uri: `${public_url}/foods/${item.img}` }}></Image> : <View className="flex justify-center items-center">
-                                            <Ionicons name="restaurant-outline" size={40} color="#ccc" />
-                                            <Text className="text-sm text-center text-gray-500 font-[ebold]">Image Not Available</Text>
-                                        </View>
-                                        }
-
+                        {/* Food Logs */}
+                        <FlashList
+                            data={dailyDetail.foodLogs}
+                            renderItem={({ item }: any) => (
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        Haptic.impactAsync(Haptic.ImpactFeedbackStyle.Medium)
+                                        router.push(`/product/${item.id}`)
+                                    }}
+                                    activeOpacity={0.7}
+                                    className="w-full mb-3 p-3 flex flex-row items-center bg-white border border-slate-100 rounded-2xl shadow-sm elevation-1"
+                                >
+                                    <View className="w-20 h-20 mr-4 rounded-xl bg-slate-50 flex justify-center items-center overflow-hidden border border-slate-100">
+                                        {item.img ? (
+                                            <Image source={{ uri: `${public_url}/foods/${item.img}` }} style={{ width: '100%', height: '100%' }} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <View className="flex w-full h-full items-center justify-center">
+                                                <Image
+                                                    source={require('../../../assets/images/eat.png')}
+                                                    style={{ width: '100%', height: '100%' }}
+                                                    resizeMode="cover"
+                                                />
+                                            </View>
+                                        )}
                                     </View>
-                                    <View className="w-[calc(100%-36%)]">
-                                        <View className="flex flex-row items-center justify-between">
-                                            <Text className="text-lg font-[medium] text-gray-700 line-clamp-1 w-[160px]">{item.name}</Text>
-                                            <Text className="font-[ebold] text-sm text-gray-400">{dayjs(item.createdAt).format("HH:mm")}</Text>
+
+                                    <View className="flex-1 justify-center gap-y-1">
+                                        <View className="flex flex-row items-start justify-between">
+                                            <Text numberOfLines={1} className="text-base text-lg font-[esemibold] text-gray-700 flex-1 pr-2">
+                                                {item.name}
+                                            </Text>
+                                            <Text className="font-[medium] text-md text-gray-400 mt-1">
+                                                {dayjs(item.createdAt).format("HH:mm")}
+                                            </Text>
                                         </View>
-                                        <View className="flex flex-row gap-1 items-center">
-                                            <Image style={{ width: 25, height: 25 }} source={require("../../../assets/images/fire.png")} className="w-full h-full object-cover" />
-                                            <Text className={`font-[ebold] text-xl ${item.quantity <= 0 ? 'line-through text-gray-300' : 'text-orange-600'}`}>{item.calories} Kcal</Text>
+
+                                        <View className="flex flex-row gap-1.5 items-center mb-1">
+                                            <Image source={require("../../../assets/images/fire.png")} style={{ width: 16, height: 16 }} resizeMode="contain" />
+                                            <Text className={`font-[ebold] text-lg ${item.quantity <= 0 ? 'line-through text-gray-300' : 'text-orange-500'}`}>
+                                                {item.calories} <Text className="font-[medium]">Kcal</Text>
+                                            </Text>
                                         </View>
-                                        <View className="flex flex-row gap-1">
-                                            <View className="flex flex-row items-center">
-                                                <Image style={{ width: 30, height: 30 }} source={require("../../../assets/images/protein.png")} className="w-full h-full object-cover" />
-                                                <Text className="font-[esemibold] text-gray-500 text-sm">{item.protein}g</Text>
+
+                                        {/* Macros Container */}
+                                        <View className="flex flex-row gap-3 items-center">
+                                            <View className="flex flex-row items-center gap-1 bg-red-50 px-2 py-0.5 rounded-md">
+                                                <Image source={require("../../../assets/images/protein.png")} style={{ width: 16, height: 16 }} resizeMode="contain" />
+                                                <Text className="font-[esemibold] text-red-600 text-md">{item.protein}g</Text>
                                             </View>
-                                            <View className="flex flex-row items-center">
-                                                <Image style={{ width: 35, height: 35 }} source={require("../../../assets/images/rices.png")} className="w-full h-full object-cover" />
-                                                <Text className="font-[esemibold] text-gray-500 text-sm">{item.carbs}g</Text>
+                                            <View className="flex flex-row items-center gap-1 bg-blue-50 px-2 py-0.5 rounded-md">
+                                                <Image source={require("../../../assets/images/rices.png")} style={{ width: 16, height: 16 }} resizeMode="contain" />
+                                                <Text className="font-[esemibold] text-blue-600 text-md">{item.carbs}g</Text>
                                             </View>
-                                            <View className="flex flex-row items-center">
-                                                <Image style={{ width: 30, height: 30 }} source={require("../../../assets/images/cheese.png")} className="w-full h-full object-cover" />
-                                                <Text className="font-[esemibold] text-gray-500 text-sm">{item.fat}g</Text>
+                                            <View className="flex flex-row items-center gap-1 bg-yellow-50 px-2 py-0.5 rounded-md">
+                                                <Image source={require("../../../assets/images/cheese.png")} style={{ width: 16, height: 16 }} resizeMode="contain" />
+                                                <Text className="font-[esemibold] text-yellow-600 text-md">{item.fat}g</Text>
                                             </View>
                                         </View>
                                     </View>
                                 </TouchableOpacity>
-                            )
-                        }}>
-
-                    </FlashList>
-
+                            )}
+                        />
+                    </View>
                 </View>
             </ScrollView>
 
@@ -342,7 +867,7 @@ const Dashboard = () => {
 
 
 
-        </SafeAreaView>
+        </View>
     )
 }
 

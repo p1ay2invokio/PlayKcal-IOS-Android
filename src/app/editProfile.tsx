@@ -211,80 +211,118 @@ export default function EditProfileScreen() {
 
     return (
         <KeyboardAvoidingView
-            className="flex-1 bg-gray-100 pt-15"
+            className="flex-1 bg-gray-50 pt-12"
             behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
-
-            {/* form */}
             <ScrollView
-                className="flex-1 px-6"
-                contentContainerStyle={{ paddingBottom: 48 }}
+                className="flex-1"
+                contentContainerStyle={{ paddingBottom: 60, paddingHorizontal: 24 }}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
             >
-
-                <View className="flex flex-row gap-2 mb-5">
-                    <Back></Back>
-                    <Text className="font-[ebold] text-xl">Edit Profile</Text>
+                {/* Header Section */}
+                <View className="flex-row items-center gap-4 mb-8 mt-2">
+                    <Back />
+                    <Text className="font-[ebold] text-2xl text-gray-800">Edit Profile</Text>
                 </View>
 
+                {/* Main Form Card */}
+                <View className="bg-white rounded-[32px] p-6 shadow-sm shadow-gray-200/50 mb-6 border border-gray-100">
 
+                    {/* Date of Birth */}
+                    <View className="mb-6">
+                        <SectionLabel label="Date of birth" />
+                        <View className="w-full py-2 flex-row justify-center items-center bg-gray-50 rounded-2xl border border-gray-100 mt-2">
+                            <DatePicker
+                                maximumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 15))}
+                                mode="date"
+                                value={form.date}
+                                onChange={(t, d: any) => setForm({ ...form, date: d })}
+                            />
+                        </View>
+                    </View>
 
+                    {/* Weight & Height (Row) */}
+                    <View className="flex-row gap-4 mb-6">
+                        <View className="flex-1">
+                            <SectionLabel label="Weight" />
+                            <View className="mt-2">
+                                <NumberInput
+                                    value={form.weight}
+                                    onChange={(v) => set("weight", v)}
+                                    placeholder="70"
+                                    unit="kg"
+                                />
+                            </View>
+                        </View>
 
-                <SectionLabel label="Date of birth" />
-                <View className="w-full flex justify-center items-center ml-[-10px]">
-                    <DatePicker maximumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 15))} mode="date" value={form.date} onChange={(t, d: any) => {
-                        setForm({
-                            ...form,
-                            date: d
-                        })
-                    }}></DatePicker>
+                        <View className="flex-1">
+                            <SectionLabel label="Height" />
+                            <View className="mt-2">
+                                <NumberInput
+                                    value={form.height}
+                                    onChange={(v) => set("height", v)}
+                                    placeholder="175"
+                                    unit="cm"
+                                />
+                            </View>
+                        </View>
+                    </View>
+
+                    {/* Caloric Deficit */}
+                    <View className="mb-6">
+                        <SectionLabel label="Caloric Deficit" />
+                        <View className="mt-2">
+                            <NumberInput
+                                value={form.fast}
+                                onChange={(v) => set("fast", v)}
+                                placeholder="แนะนำ 100 - 500"
+                                unit="kcal"
+                            />
+                        </View>
+                        <Text className="text-xs text-gray-400 font-[emedium] mt-2 ml-1">
+                            *ลดเพื่อการลดน้ำหนักที่ปลอดภัย (100 - 500 kcal)
+                        </Text>
+                    </View>
+
+                    {/* Gender */}
+                    <View className="mb-2">
+                        <SectionLabel label="Gender" />
+                        <View className="mt-2">
+                            <SegmentedPicker<Sex>
+                                options={["male", "female"]}
+                                value={form.sex}
+                                onChange={(v) => set("sex", v)}
+                            />
+                        </View>
+                    </View>
+
                 </View>
 
-                <SectionLabel label="Weight" />
-                <NumberInput
-                    value={form.weight}
-                    onChange={(v) => set("weight", v)}
-                    placeholder="e.g. 70"
-                    unit="kg"
-                />
+                {/* Macro Card (Outside the main form card to make it pop) */}
+                {macros && (
+                    <View className="mb-6">
+                        <MacroCard macros={macros} />
+                    </View>
+                )}
 
-                <SectionLabel label="Height" />
-                <NumberInput
-                    value={form.height}
-                    onChange={(v) => set("height", v)}
-                    placeholder="e.g. 175"
-                    unit="cm"
-                />
-
-
-                <SectionLabel label="Caloric Deficit" />
-                <NumberInput
-                    value={form.fast}
-                    onChange={(v) => set("fast", v)}
-                    placeholder="แนะนำ 100 - 500"
-                    unit="kcal"
-                />
-
-                <SectionLabel label="Gender" />
-                <SegmentedPicker<Sex>
-                    options={["male", "female"]}
-                    value={form.sex}
-                    onChange={(v) => set("sex", v)}
-                />
-
-                {macros && <MacroCard macros={macros} />}
-
+                {/* Save Button */}
                 <TouchableOpacity
                     onPress={handleSave}
                     disabled={loading}
-                    className="mt-8 w-full py-5 bg-gray-700 rounded-2xl items-center"
-                    activeOpacity={0.85}
+                    className={`w-full py-4 rounded-2xl items-center shadow-md ${loading ? 'bg-gray-400' : 'bg-gray-800 shadow-gray-400/30'
+                        }`}
+                    activeOpacity={0.8}
                 >
-                    {loading
-                        ? <ActivityIndicator color="#fff" />
-                        : <Text className="font-[ebold] text-white text-lg">Save Changes</Text>}
+                    {loading ? (
+                        <ActivityIndicator color="#fff" />
+                    ) : (
+                        <Text className="font-[ebold] text-white text-lg tracking-wide">
+                            Save Changes
+                        </Text>
+                    )}
                 </TouchableOpacity>
+
             </ScrollView>
         </KeyboardAvoidingView>
     );

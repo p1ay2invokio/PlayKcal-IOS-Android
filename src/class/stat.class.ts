@@ -18,4 +18,19 @@ export class Stat {
 
         return data
     }
+
+    public predict = async() => {
+        let token = await AsyncStorage.getItem('token')
+
+
+        let { data } = await axios.get(`${public_url}/api/predict`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+
+        console.log("EWW : ", data)
+
+        return data
+    }
 }
