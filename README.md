@@ -4,7 +4,14 @@ Your nutrition sidekick that makes calorie tracking effortless. 🥗✨
 
 PlayKcal helps you log meals, track calories, and understand your nutrition — all in a simple, focused mobile app.
 
-<img src="./screenshots/1.jpg" alt="Screenshot 1" width="200" height="450" />
+<img src="./screenshots/11.jpg" alt="Screenshot 1" width="200" height="450" />
+<img src="./screenshots/22.jpg" alt="Screenshot 2" width="200" height="450" />
+<img src="./screenshots/33.jpg" alt="Screenshot 2" width="200" height="450" />
+<img src="./screenshots/44.jpg" alt="Screenshot 1" width="200" height="450" />
+<img src="./screenshots/55.jpg" alt="Screenshot 2" width="200" height="450" />
+<img src="./screenshots/66.jpg" alt="Screenshot 2" width="200" height="450" />
+<img src="./screenshots/77.jpg" alt="Screenshot 2" width="200" height="450" />
+<img src="./screenshots/88.jpg" alt="Screenshot 2" width="200" height="450" />
 
 ---
 
