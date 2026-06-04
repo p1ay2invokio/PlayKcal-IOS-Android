@@ -592,7 +592,7 @@ const Dashboard = () => {
                 </View>
 
                 <Animated.View style={[useAnimatedStyle(() => ({ opacity: opacity.value }))]} className="absolute top-16 left-[30px] border border-gray-200 shadow bg-white z-[1] rounded-xl">
-                    <DatePicker style={{ backgroundColor: 'white', borderRadius: 12 }} display="inline" value={selectDay} onChange={(e, d) => {
+                    <DatePicker themeVariant="light" textColor="black" style={{ backgroundColor: 'white', borderRadius: 12 }} display="inline" value={selectDay} onChange={(e, d) => {
                         setCurrentDate(d)
                         opacity.value = withTiming(0, { duration: 200 })
                     }} />

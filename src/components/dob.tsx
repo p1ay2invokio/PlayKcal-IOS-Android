@@ -76,6 +76,8 @@ const Dob = () => {
                         onChange={(e, selectedDate: any) => {
                             if (selectedDate) setDob(selectedDate.toISOString())
                         }}
+                        themeVariant="light"
+                        textColor="black"
                     />
                 </Animated.View>
             </View>

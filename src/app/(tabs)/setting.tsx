@@ -425,7 +425,7 @@ const Setting = () => {
                         <Text className="font-[ebold]">Sign Out</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity onPress={async () => {
+                    {/* <TouchableOpacity onPress={async () => {
 
                         const check = await cookie.getItem("token")
 
@@ -434,7 +434,7 @@ const Setting = () => {
                     }} className="w-full h-[60px] flex-row bg-white rounded-2xl border border-gray-200 px-6 items-center gap-2 justify-start flex">
                         <Ionicons name="log-out-outline" size={24} color="#4b5563" />
                         <Text className="font-[ebold]">Check Token</Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                 </View>
             </ScrollView>
         </View>

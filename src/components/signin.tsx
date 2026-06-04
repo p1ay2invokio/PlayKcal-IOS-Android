@@ -103,8 +103,6 @@ const Signin = () => {
                         formData.append("fast", fast)
                         formData.append("weight", weight)
                         formData.append("height", height)
-                        formData.append("goal", goal)
-                        formData.append("targetWeight", targetWeight)
 
                         let { data } = await axios.post(`${process.env.EXPO_PUBLIC_URI}/auth/line`, formData)
 
@@ -141,8 +139,6 @@ const Signin = () => {
                                 fast: fast ? parseFloat(fast) : null,
                                 weight: weight ? parseFloat(weight) : null,
                                 height: height ? parseFloat(height) : null,
-                                goal: goal || null,
-                                targetWeight: targetWeight ? parseInt(targetWeight) : null,
                             };
 
                             try {
@@ -199,8 +195,6 @@ const Signin = () => {
                                 fast: fast ? parseFloat(fast) : undefined,
                                 weight: weight ? parseFloat(weight) : undefined,
                                 height: height ? parseFloat(height) : undefined,
-                                goal: goal || undefined,
-                                targetWeight: targetWeight ? parseInt(targetWeight) : undefined,
                             };
 
                             const response = await axios.post(`${process.env.EXPO_PUBLIC_URI}/auth/apple`, payload);
