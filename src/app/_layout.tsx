@@ -6,6 +6,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import * as Device from 'expo-device';
 import { Alert } from "react-native";
 import messaging from '@react-native-firebase/messaging'
+import { useLanguageStore } from "@/stores/language.store";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -50,6 +51,7 @@ export default function Layout() {
     }
 
     useEffect(() => {
+        useLanguageStore.getState().loadLocale();
         requestPermissionNoti();
 
         const fore = messaging().onMessage(async remoteMessage => {
@@ -93,6 +95,7 @@ export default function Layout() {
     return (
         <Stack>
             <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen name="onboarding" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="register" options={{ headerShown: false }} />
             <Stack.Screen name="personalized" options={{ headerShown: false }} />

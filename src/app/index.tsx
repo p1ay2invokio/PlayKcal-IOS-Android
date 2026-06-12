@@ -11,14 +11,19 @@ export default function Splash() {
             if (token) {
                 router.replace("/(tabs)/home")
             } else {
-                router.replace("/register")
+                const hasSeenOnboarding = await cookie.getItem("hasSeenOnboarding")
+                if (hasSeenOnboarding === "true") {
+                    router.replace("/register")
+                } else {
+                    router.replace("/onboarding")
+                }
             }
         })()
     }, [])
 
     return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <ActivityIndicator size="large" />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'white' }}>
+            <ActivityIndicator size="large" color="#f59e0b" />
         </View>
     )
 }

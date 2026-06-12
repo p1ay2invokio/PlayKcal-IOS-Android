@@ -10,6 +10,7 @@ import cookie from '@react-native-async-storage/async-storage'
 import { router, useRouter } from "expo-router"
 import Back from "./back"
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useLanguageStore } from "@/stores/language.store"
 
 const Signin = () => {
 
@@ -17,6 +18,7 @@ const Signin = () => {
     let navigate = useRouter()
 
     let { current, setCurrent } = useMeasureStore()
+    const { t, locale } = useLanguageStore()
 
     const GoogleLogin = async () => {
         await GoogleSignin.hasPlayServices()
@@ -58,7 +60,7 @@ const Signin = () => {
     }, [])
 
     return (
-        <View className="flex-1 bg-white px-6">
+        <View className="flex-1 bg-white px-6" key={locale}>
 
             {/* ปุ่ม Back */}
             <TouchableOpacity
@@ -71,10 +73,10 @@ const Signin = () => {
             {/* Header Section */}
             <View className="items-center mt-36 mb-12">
                 <Text className="font-[ebold] text-3xl text-gray-800 mb-3 text-center">
-                    Almost there!
+                    {t('almostThere')}
                 </Text>
                 <Text className="font-[emedium] text-base text-gray-500 text-center px-4 leading-relaxed">
-                    Create an account or log in to save your personalized plan and track your progress.
+                    {t('signinDesc')}
                 </Text>
             </View>
 
@@ -116,7 +118,7 @@ const Signin = () => {
                     <View className="absolute left-6 flex justify-center items-center">
                         <Image style={{ width: 24, height: 24 }} source={require('../../assets/images/line.png')} />
                     </View>
-                    <Text className="text-white font-[ebold] text-lg tracking-wide">Continue with LINE</Text>
+                    <Text className="text-white font-[ebold] text-lg tracking-wide">{t('continueWithLine')}</Text>
                 </TouchableOpacity>
 
                 {/* Google Button */}
@@ -168,7 +170,7 @@ const Signin = () => {
                     <View className="absolute left-6 flex justify-center items-center">
                         <Image style={{ width: 24, height: 24 }} source={require('../../assets/images/search.png')} />
                     </View>
-                    <Text className="text-gray-700 font-[ebold] text-lg tracking-wide">Continue with Google</Text>
+                    <Text className="text-gray-700 font-[ebold] text-lg tracking-wide">{t('continueWithGoogle')}</Text>
                 </TouchableOpacity>
 
                 {/* Apple Button */}
@@ -213,7 +215,7 @@ const Signin = () => {
                     <View className="absolute left-6 flex justify-center items-center">
                         <Image style={{ width: 24, height: 24 }} source={require('../../assets/images/apple-logo.png')} />
                     </View>
-                    <Text className="text-gray-700 font-[ebold] text-lg tracking-wide">Continue with Apple</Text>
+                    <Text className="text-gray-700 font-[ebold] text-lg tracking-wide">{t('continueWithApple')}</Text>
                 </TouchableOpacity>
 
             </View>

@@ -3,29 +3,31 @@ import { useState } from "react"
 import { router, useLocalSearchParams } from "expo-router"
 import Back from "@/components/back"
 import { Food } from "@/class/food.class"
+import { useLanguageStore } from "@/stores/language.store"
 
 const Manual = () => {
+    const { t } = useLanguageStore()
+    let { id, name, qty, kcal, protein, carbs, fat } = useLocalSearchParams()
+    
     const [form, setForm] = useState<any>({
-        name: "",
-        qty: "",
-        kcal: "",
-        protein: "",
-        carbs: "",
-        fat: "",
+        name: name ? String(name) : "",
+        qty: qty ? String(qty) : "",
+        kcal: kcal ? String(kcal) : "",
+        protein: protein ? String(protein) : "",
+        carbs: carbs ? String(carbs) : "",
+        fat: fat ? String(fat) : "",
     })
 
-    let { id } = useLocalSearchParams()
-
     const fields = [
-        { key: "name", label: "Name", placeholder: "ex. fried rice", keyboardType: "default" },
-        { key: "qty", label: "Portion", placeholder: "1", keyboardType: "numeric" },
-        { key: "kcal", label: "Calories (kcal)", placeholder: "250", keyboardType: "numeric" },
+        { key: "name", label: t('name'), placeholder: t('name') === "ชื่อ" ? "เช่น ข้าวมันไก่" : "ex. fried rice", keyboardType: "default" },
+        { key: "qty", label: t('portion'), placeholder: "1", keyboardType: "numeric" },
+        { key: "kcal", label: `${t('calories')} (${t('kcalLabel')})`, placeholder: "250", keyboardType: "numeric" },
     ]
 
     const macroFields = [
-        { key: "protein", label: "Protein (g)", placeholder: "10", keyboardType: "numeric" },
-        { key: "carbs", label: "Carbs (g)", placeholder: "30", keyboardType: "numeric" },
-        { key: "fat", label: "Fat (g)", placeholder: "8", keyboardType: "numeric" },
+        { key: "protein", label: `${t('protein')} (g)`, placeholder: "10", keyboardType: "numeric" },
+        { key: "carbs", label: `${t('carbs')} (g)`, placeholder: "30", keyboardType: "numeric" },
+        { key: "fat", label: `${t('fat')} (g)`, placeholder: "8", keyboardType: "numeric" },
     ]
 
     const macroColors = ['#4ADE80', '#60A5FA', '#F97316']
@@ -42,7 +44,7 @@ const Manual = () => {
                 <View className="flex-row items-center gap-3">
                     <Back />
                     <Text className="font-[ebold] text-2xl text-gray-900">
-                        Add Food
+                        {t('addFood')}
                     </Text>
                 </View>
             </View>
@@ -51,7 +53,7 @@ const Manual = () => {
                 {/* Main fields */}
                 <View className="bg-white rounded-2xl p-5 shadow-sm mb-4 gap-4">
                     <Text className="font-[ebold] text-xs text-green-600 uppercase">
-                        Food Details
+                        {t('foodDetails')}
                     </Text>
                     {fields.map((field: any) => (
                         <View key={field.key}>
@@ -88,7 +90,7 @@ const Manual = () => {
                 {/* Macros section */}
                 <View className="bg-white rounded-2xl p-5 shadow-sm mb-6">
                     <Text className="font-[ebold] text-xs text-green-600 uppercase" style={{ marginBottom: 16 }}>
-                        Macronutrients
+                        {t('macronutrients')}
                     </Text>
                     <View className="flex-row gap-3">
                         {macroFields.map((field: any, index: number) => (
@@ -138,7 +140,7 @@ const Manual = () => {
                                 router.replace('/home');
                             }
                         } else {
-                            Alert.alert("ข้อมูลไม่ครบถ้วน");
+                            Alert.alert(t('incompleteData'));
                         }
                     }}
                     className="bg-green-500 rounded-2xl items-center"
@@ -152,7 +154,7 @@ const Manual = () => {
                     }}
                 >
                     <Text className="text-white font-[ebold] text-lg">
-                        Save Food
+                        {t('saveFood')}
                     </Text>
                 </TouchableOpacity>
             </View>

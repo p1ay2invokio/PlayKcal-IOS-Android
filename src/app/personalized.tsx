@@ -4,11 +4,11 @@ import cookie from '@react-native-async-storage/async-storage'
 import { router } from "expo-router"
 import { useMeasureStore } from "@/stores/measure.store"
 import * as StoreReview from 'expo-store-review';
+import { useLanguageStore } from "@/stores/language.store";
 
 const Personalized = () => {
-
-
     let { reset } = useMeasureStore()
+    const { t } = useLanguageStore()
 
     useEffect(() => {
         (async () => {
@@ -27,17 +27,17 @@ const Personalized = () => {
 
             {/* วงกลมล้อมรอบ Spinner ให้ดูพรีเมียมขึ้น */}
             <View className="w-24 h-24 bg-gray-50 rounded-full flex justify-center items-center mb-6 shadow-sm border border-gray-100">
-                <ActivityIndicator size="large" color="#1F2937" /> {/* ใช้สีเทาเข้ม/ดำ ให้เข้ากับธีมแอป */}
+                <ActivityIndicator size="large" color="#1F2937" />
             </View>
 
             {/* Header Text */}
             <Text className="font-[ebold] text-2xl text-gray-800 text-center mb-3 tracking-wide">
-                Personalizing your plan...
+                {t('personalizingPlan')}
             </Text>
 
             {/* Subtext อธิบายว่ากำลังทำอะไร */}
             <Text className="font-[emedium] text-base text-gray-500 text-center leading-relaxed">
-                We are crunching the numbers to craft the perfect daily goals for you.
+                {t('crunchingNumbers')}
             </Text>
 
         </View>

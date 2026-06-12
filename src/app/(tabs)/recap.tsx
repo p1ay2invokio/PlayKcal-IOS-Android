@@ -20,102 +20,87 @@ import {
     Keyboard,
     Dimensions,
 } from "react-native";
-import { BarChart } from 'react-native-gifted-charts'
+import { BarChart, PieChart } from 'react-native-gifted-charts'
+import { useLanguageStore } from "@/stores/language.store";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 
 const screenWidth = Dimensions.get('window').width;
 const chartWidth = screenWidth - 70; // ความกว้างของกรอบที่มองเห็น (Viewport)
 
 
 const Recap = () => {
-
-
     let [barData, setBarData] = useState<any>([])
-
     let [currentWeight, setCurrentWeight] = useState("")
-
-
-
     let [modal, setModal] = useState(false)
-
+    const { t, locale } = useLanguageStore()
+    const insets = useSafeAreaInsets()
+    console.log("RECAP RENDER: locale =", locale, "t(macroDistribution) =", t('macroDistribution'))
 
     useEffect(() => {
-
         (async () => {
             let s = new Stat()
-
             let res = await s.getStat(7)
-
             setBarData(res)
         })()
-
-        // setBarData(barData)
     }, [])
 
+    const formattedBarData = barData.map((item: any) => ({
+        ...item,
+        label: item.date ? dayjs(item.date).format("D") : item.label
+    }))
+
+    const totalProtein = barData.reduce((sum: number, item: any) => sum + (item.protein || 0), 0)
+    const totalCarbs = barData.reduce((sum: number, item: any) => sum + (item.carbs || 0), 0)
+    const totalFat = barData.reduce((sum: number, item: any) => sum + (item.fat || 0), 0)
+    const totalMacros = totalProtein + totalCarbs + totalFat
+
+    const proteinPercent = totalMacros > 0 ? Math.round((totalProtein / totalMacros) * 100) : 0
+    const carbsPercent = totalMacros > 0 ? Math.round((totalCarbs / totalMacros) * 100) : 0
+    const fatPercent = totalMacros > 0 ? Math.round((totalFat / totalMacros) * 100) : 0
+
+    const hasData = totalMacros > 0
+
+    const pieData = hasData
+        ? [
+            { value: totalProtein, color: '#ef4444', text: `${proteinPercent}%` },
+            { value: totalCarbs, color: '#22c55e', text: `${carbsPercent}%` },
+            { value: totalFat, color: '#3b82f6', text: `${fatPercent}%` },
+          ]
+        : [
+            { value: 1, color: '#f1f5f9', text: '' }
+          ]
+
     return (
-        <View className="flex-1">
-
-
-            {/* {modal ? <Pressable onPress={()=>{
-                setModal(false)
-            }} className='bg-[#000]/40 w-full h-full z-1 absolute top-0 left-0 flex justify-center items-center'>
-                <View className="w-[70%] bg-white p-5 py-10 rounded-2xl">
-                    <TextInput textAlign="center" className="font-[ebold] text-2xl border-b-1 border-gray-300" value={currentWeight} keyboardType="numeric" onChangeText={(text) => {
-                        const clean = text.replace(/[^0-9]/g, '')
-                        if (clean === '') {
-                            setCurrentWeight('')
-                            return
-                        }
-                        if (clean.startsWith('0')) return
-                        setCurrentWeight(clean)
-                    }} placeholder="60" />
-                    <TouchableOpacity onPress={async () => {
-                        if (currentWeight) {
-                            const user = new User()
-                            let date = new Date()
-                            let convertDay = dayjs(date).format("DD-MM-YYYY")
-                            const result = await user.updateWeight(Number(currentWeight), convertDay)
-
-                            if (result.statusCode === 200) {
-                                setModal(false)
-                                setCurrentWeight("")
-                                Keyboard.dismiss()
-                                router.push('/home')
-                            }
-                        }else{
-                            Alert.alert("Error", "Please enter a valid weight")
-                        }
-                    }} className="bg-green-500 font-[ebold] border-b-1 border-gray-300 py-3 rounded-xl mt-4 flex justify-center items-center">
-                        <Text className="text-white font-[ebold] text-xl">Update</Text>
-                    </TouchableOpacity>
-                </View>
-            </Pressable> : null} */}
-
+        <View className="flex-1" key={locale}>
             <ScrollView
-                className="flex-1 p-5 px-5 pt-5 gap-3 bg-white">
+                style={{ flex: 1, backgroundColor: 'white' }}
+                contentContainerStyle={{
+                    paddingTop: insets.top > 0 ? insets.top : 20,
+                    paddingBottom: insets.bottom > 0 ? insets.bottom + 80 : 100,
+                    paddingHorizontal: 20,
+                    gap: 16,
+                }}
+                showsVerticalScrollIndicator={false}
+            >
 
                 <View className="border border-gray-200 rounded-3xl shadow-gray-200 shadow-sm p-3">
                     <BMITimeline></BMITimeline>
-                    {/* <TouchableOpacity onPress={() => setModal(true)} activeOpacity={0.7} className='flex-1 bg-green-600 py-3 rounded-xl flex justify-center items-center mb-3'>
-                        <Text className='text-white font-[ebold]'>Update Current Weight</Text>
-                    </TouchableOpacity> */}
                 </View>
 
-
-
                 <View className="bg-white p-5 rounded-3xl mt-4 border border-gray-100 shadow-sm shadow-gray-200 overflow-hidden">
-
                     {/* Header Section */}
                     <View className="mb-6">
                         <Text className="font-[ebold] text-2xl text-gray-800">
-                            Calories Burned
+                            {t('caloriesHistory')}
                         </Text>
                         <Text className="font-[emedium] text-sm text-gray-400 mt-1">
-                            Last 7 days of total calories
+                            {t('last7DaysTotal')}
                         </Text>
                     </View>
 
                     <BarChart
-                        data={barData}
+                        data={formattedBarData}
                         width={chartWidth}
                         barWidth={28} // ปรับให้แท่งหนาขึ้นเล็กน้อย
                         spacing={35} // ระยะห่างระหว่างแท่ง
@@ -166,7 +151,7 @@ const Recap = () => {
                                     fontFamily: 'emedium',
                                     textAlign: 'center'
                                 }}>
-                                    kcal
+                                    {t('kcalLabel')}
                                 </Text>
                             </View>
                         )}
@@ -180,6 +165,93 @@ const Recap = () => {
                         stepValue={1200}
                         maxValue={6000}
                     />
+                </View>
+
+                {/* Macronutrient Distribution Card */}
+                <View className="bg-white p-5 rounded-3xl mt-4 border border-gray-100 shadow-sm shadow-gray-200 overflow-hidden">
+                    {/* Header Section */}
+                    <View className="mb-6">
+                        <Text className="font-[ebold] text-2xl text-gray-800">
+                            {t('macroDistribution')}
+                        </Text>
+                        <Text className="font-[emedium] text-sm text-gray-400 mt-1">
+                            {t('totalIntake')} (7 {locale === 'th' ? 'วันล่าสุด' : 'days'})
+                        </Text>
+                    </View>
+
+                    {hasData ? (
+                        <View className="flex-row items-center justify-between">
+                            {/* Chart on the left */}
+                            <View className="items-center justify-center relative" style={{ width: screenWidth * 0.4 }}>
+                                <PieChart
+                                    data={pieData}
+                                    donut
+                                    showText
+                                    textColor="white"
+                                    textSize={10}
+                                    radius={55}
+                                    innerRadius={35}
+                                    innerCircleColor={'white'}
+                                    centerLabelComponent={() => (
+                                        <View className="justify-center items-center">
+                                            <Text className="font-[ebold] text-base text-slate-800">
+                                                {Math.round(totalMacros)}g
+                                            </Text>
+                                            <Text className="font-[emedium] text-[10px] text-slate-400">
+                                                {t('total')}
+                                            </Text>
+                                        </View>
+                                    )}
+                                />
+                            </View>
+
+                            {/* Legend / Details on the right */}
+                            <View className="flex-1 gap-y-3 pl-4">
+                                {/* Protein */}
+                                <View className="flex-row items-center justify-between bg-red-50/50 p-2.5 rounded-2xl border border-red-100/30">
+                                    <View className="flex-row items-center gap-2">
+                                        <View className="w-3 h-3 rounded-full bg-red-500" />
+                                        <Text className="font-[ebold] text-slate-700 text-sm">{t('protein')}</Text>
+                                    </View>
+                                    <View className="items-end">
+                                        <Text className="font-[ebold] text-slate-800 text-sm">{Math.round(totalProtein)}g</Text>
+                                        <Text className="font-[emedium] text-xs text-red-500">{proteinPercent}%</Text>
+                                    </View>
+                                </View>
+
+                                {/* Carbs */}
+                                <View className="flex-row items-center justify-between bg-green-50/50 p-2.5 rounded-2xl border border-green-100/30">
+                                    <View className="flex-row items-center gap-2">
+                                        <View className="w-3 h-3 rounded-full bg-green-500" />
+                                        <Text className="font-[ebold] text-slate-700 text-sm">{t('carbs')}</Text>
+                                    </View>
+                                    <View className="items-end">
+                                        <Text className="font-[ebold] text-slate-800 text-sm">{Math.round(totalCarbs)}g</Text>
+                                        <Text className="font-[emedium] text-xs text-green-500">{carbsPercent}%</Text>
+                                    </View>
+                                </View>
+
+                                {/* Fat */}
+                                <View className="flex-row items-center justify-between bg-blue-50/50 p-2.5 rounded-2xl border border-blue-100/30">
+                                    <View className="flex-row items-center gap-2">
+                                        <View className="w-3 h-3 rounded-full bg-blue-500" />
+                                        <Text className="font-[ebold] text-slate-700 text-sm">{t('fat')}</Text>
+                                    </View>
+                                    <View className="items-end">
+                                        <Text className="font-[ebold] text-slate-800 text-sm">{Math.round(totalFat)}g</Text>
+                                        <Text className="font-[emedium] text-xs text-blue-500">{fatPercent}%</Text>
+                                    </View>
+                                </View>
+                            </View>
+                        </View>
+                    ) : (
+                        <View className="py-10 items-center justify-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                            <Ionicons name="pie-chart-outline" size={48} color="#cbd5e1" />
+                            <Text className="font-[emedium] text-slate-400 mt-2 text-sm text-center px-4">
+                                {t('noMacroData')}
+                            </Text>
+                        </View>
+                    )}
                 </View>
             </ScrollView>
         </View>

@@ -7,10 +7,11 @@ import { Excercise } from "@/class/excercise.class"
 import Exercise from "../exercise"
 //@ts-ignore
 import Icon from "react-native-vector-icons/Ionicons"
+import { useLanguageStore } from "@/stores/language.store"
+import cookie from '@react-native-async-storage/async-storage'
 
 const Ex = () => {
-
-
+    const { t } = useLanguageStore()
     const [form, setForm] = useState<any>({
         activity: "",
         caloriesBurned: 0
@@ -18,25 +19,47 @@ const Ex = () => {
 
     let { id } = useLocalSearchParams()
 
+    const toggleFavorite = async () => {
+        try {
+            const favsStr = await cookie.getItem("favorite_exercises")
+            let favs = favsStr ? JSON.parse(favsStr) : []
+            
+            const currentActivity = form.activity
+            const isFav = favs.some((item: any) => item.activity === currentActivity)
+            
+            if (isFav) {
+                favs = favs.filter((item: any) => item.activity !== currentActivity)
+                await cookie.setItem("favorite_exercises", JSON.stringify(favs))
+                Alert.alert(t('success'), t('removedFromFav'))
+            } else {
+                const newItem = {
+                    activity: currentActivity,
+                    caloriesBurned: form.caloriesBurned
+                }
+                favs.push(newItem)
+                await cookie.setItem("favorite_exercises", JSON.stringify(favs))
+                Alert.alert(t('success'), t('savedToFav'))
+            }
+        } catch (e) {
+            console.error("Error toggling favorite exercise:", e)
+        }
+    }
+
     const fields = [
-        { key: "activity", label: "Activity", placeholder: "เช่น วิ่งในสวน, เล่นบาส", keyboardType: "default" },
-        { key: "caloriesBurned", label: "Calories Burned", placeholder: "เช่น 300", keyboardType: "numeric" },
+        { key: "activity", label: t('activityLabel'), placeholder: t('activityPlaceholder'), keyboardType: "default" },
+        { key: "caloriesBurned", label: t('caloriesBurned'), placeholder: "เช่น 300", keyboardType: "numeric" },
     ]
 
     useEffect(() => {
         (async () => {
             let e = new Excercise()
-
             let data = await e.getEx(Number(id))
-
             setForm({
                 activity: data.name,
                 caloriesBurned: String(data.caloriesBurned)
             })
-
             console.log(form)
         })()
-
     }, [])
 
     console.log("man : ", id)
@@ -53,32 +76,45 @@ const Ex = () => {
                     <View className="flex-row items-center gap-3">
                         <Back />
                         <Text className="font-[ebold] text-2xl text-gray-900">
-                            Edit Activity
+                            {t('editActivity')}
                         </Text>
                     </View>
-                    <TouchableOpacity
-                        activeOpacity={0.7}
-                        className="bg-red-50 rounded-xl"
-                        style={{ padding: 10 }}
-                        onPress={() => {
-                            Alert.alert("ยืนยันการลบ", "คุณต้องการลบกิจกรรมนี้หรือไม่?", [
-                                { text: "ยกเลิก", style: "cancel" },
-                                {
-                                    text: "ลบ",
-                                    style: "destructive",
-                                    onPress: async () => {
-                                        let e = new Excercise()
-                                        let res = await e.deleteEx(Number(id))
-                                        if (res.statusCode === 200) {
-                                            router.replace("/home")
+                    <View className="flex-row items-center gap-2">
+                        {/* Favorite button */}
+                        <TouchableOpacity
+                            activeOpacity={0.7}
+                            className="bg-amber-50 rounded-xl"
+                            style={{ padding: 10 }}
+                            onPress={toggleFavorite}
+                        >
+                            <Icon name="star" size={20} color="#D97706" />
+                        </TouchableOpacity>
+
+                        {/* Delete button */}
+                        <TouchableOpacity
+                            activeOpacity={0.7}
+                            className="bg-red-50 rounded-xl"
+                            style={{ padding: 10 }}
+                            onPress={() => {
+                                Alert.alert(t('confirmDelete'), t('deleteExerciseConfirmMsg'), [
+                                    { text: t('cancel'), style: "cancel" },
+                                    {
+                                        text: t('delete'),
+                                        style: "destructive",
+                                        onPress: async () => {
+                                            let e = new Excercise()
+                                            let res = await e.deleteEx(Number(id))
+                                            if (res.statusCode === 200) {
+                                                router.replace("/home")
+                                            }
                                         }
                                     }
-                                }
-                            ])
-                        }}
-                    >
-                        <Icon name="trash" size={20} color="#EF4444" />
-                    </TouchableOpacity>
+                                ])
+                            }}
+                        >
+                            <Icon name="trash" size={20} color="#EF4444" />
+                        </TouchableOpacity>
+                    </View>
                 </View>
             </View>
 
@@ -86,7 +122,7 @@ const Ex = () => {
                 {/* Fields Card */}
                 <View className="bg-white rounded-2xl p-5 shadow-sm mb-6 gap-4">
                     <Text className="font-[ebold] text-xs text-green-600 uppercase">
-                        Exercise Details
+                        {t('exerciseDetails')}
                     </Text>
                     {fields.map((field: any) => (
                         <View key={field.key}>
@@ -131,7 +167,7 @@ const Ex = () => {
                                 router.replace("/home")
                             }
                         } else {
-                            Alert.alert("ข้อมูลไม่ครบถ้วน")
+                            Alert.alert(t('incompleteData'))
                         }
                     }}
                     className="bg-green-500 rounded-2xl items-center"
@@ -145,7 +181,7 @@ const Ex = () => {
                     }}
                 >
                     <Text style={{ color: 'white', fontFamily: 'ebold', fontSize: 18 }}>
-                        บันทึก
+                        {t('save')}
                     </Text>
                 </TouchableOpacity>
             </View>

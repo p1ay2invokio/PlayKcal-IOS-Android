@@ -7,5 +7,5 @@ interface Token {
 
 export const useToken = create<Token>((set) => ({
     token: null,
-    setToken: (token: any) => ({ token: token })
+    setToken: (token: any) => set({ token })
 }))

@@ -17,15 +17,10 @@ import { User } from "@/class/user.class";
 import Back from "@/components/back";
 import DatePicker from '@react-native-community/datetimepicker'
 import dayjs from "dayjs";
+import { useLanguageStore } from "@/stores/language.store";
 
 const API_BASE = process.env.EXPO_PUBLIC_URI
 
-async function getAuthToken(): Promise<string> {
-    // e.g. return await SecureStore.getItemAsync("token") ?? "";
-    return "";
-}
-
-// ─── types ────────────────────────────────────────────────────────────────────
 type Sex = "male" | "female"
 
 interface FormState {
@@ -42,8 +37,6 @@ interface MacroResult {
     dailyFat: number;
     dailyCarbs: number;
 }
-
-// ─── sub-components ───────────────────────────────────────────────────────────
 
 function SectionLabel({ label }: { label: string }) {
     return (
@@ -83,6 +76,7 @@ function SegmentedPicker<T extends string>({
     value: T | "";
     onChange: (v: T) => void;
 }) {
+    const { t } = useLanguageStore()
     return (
         <View className="flex-row bg-white rounded-2xl overflow-hidden shadow-sm">
             {options.map((opt, idx) => {
@@ -95,7 +89,7 @@ function SegmentedPicker<T extends string>({
                         activeOpacity={0.75}
                     >
                         <Text className={`font-[ebold] text-sm ${selected ? "text-white" : "text-gray-500"}`}>
-                            {opt}
+                            {t(opt as any)}
                         </Text>
                     </TouchableOpacity>
                 );
@@ -105,15 +99,16 @@ function SegmentedPicker<T extends string>({
 }
 
 function MacroCard({ macros }: { macros: MacroResult }) {
+    const { t } = useLanguageStore()
     return (
         <View className="mt-6 bg-white rounded-2xl px-5 py-5 shadow-sm">
-            <Text className="font-[ebold] text-gray-700 text-base mb-3">📊 Your Daily Targets</Text>
+            <Text className="font-[ebold] text-gray-700 text-base mb-3">📊 {t('yourDailyTargets')}</Text>
             <View className="flex-row flex-wrap gap-y-3">
                 {[
-                    { label: "Calories", value: `${macros.dailyCalories} kcal` },
-                    { label: "Protein", value: `${macros.dailyProtein} g` },
-                    { label: "Carbs", value: `${macros.dailyCarbs} g` },
-                    { label: "Fat", value: `${macros.dailyFat} g` },
+                    { label: t('kcalLabel'), value: `${macros.dailyCalories} kcal` },
+                    { label: t('protein'), value: `${macros.dailyProtein} g` },
+                    { label: t('carbs'), value: `${macros.dailyCarbs} g` },
+                    { label: t('fat'), value: `${macros.dailyFat} g` },
                 ].map((item) => (
                     <View key={item.label} className="w-1/2 pr-2">
                         <Text className="font-[ebold] text-gray-400 text-xs uppercase tracking-widest">{item.label}</Text>
@@ -125,9 +120,8 @@ function MacroCard({ macros }: { macros: MacroResult }) {
     );
 }
 
-// ─── main screen ──────────────────────────────────────────────────────────────
-
 export default function EditProfileScreen() {
+    const { t, locale } = useLanguageStore()
     const [form, setForm] = useState<FormState>({
         weight: "", height: "", sex: "", fast: "", date: new Date()
     });
@@ -141,7 +135,7 @@ export default function EditProfileScreen() {
         const { weight, height, sex, fast, date } = form;
 
         if (!weight || !height || !sex || !fast || !date) {
-            Alert.alert("Missing fields", "Please fill in all details before saving.");
+            Alert.alert(t('missingFields'), t('fillAllDetails'));
             return;
         }
 
@@ -168,18 +162,18 @@ export default function EditProfileScreen() {
             if (data.macros) {
                 setMacros(data.macros);
                 Alert.alert(
-                    "Profile Updated ✓",
-                    `Daily targets recalculated:\n${data.macros.dailyCalories} kcal • ${data.macros.dailyProtein}g protein`,
-                    [{ text: "Done", onPress: () => router.back() }]
+                    t('profileUpdated'),
+                    t('dailyTargetsRecalculated', { calories: data.macros.dailyCalories, protein: data.macros.dailyProtein }),
+                    [{ text: t('done'), onPress: () => router.back() }]
                 );
             } else {
-                Alert.alert("Saved!", "Profile updated.", [
+                Alert.alert(t('saved'), t('profileUpdatedMsg'), [
                     { text: "OK", onPress: () => router.replace("/home") },
                 ]);
             }
         } catch (err: any) {
             const msg = err.response?.data?.message ?? err.message;
-            Alert.alert("Error", msg);
+            Alert.alert(t('error'), msg);
         } finally {
             setLoading(false);
         }
@@ -191,11 +185,7 @@ export default function EditProfileScreen() {
     useFocusEffect(useCallback(() => {
         (async () => {
             let u = new User()
-
-
             let res: any = await u.getUserData()
-
-
             console.log(res)
 
             setUser(res)
@@ -211,6 +201,7 @@ export default function EditProfileScreen() {
 
     return (
         <KeyboardAvoidingView
+            key={locale}
             className="flex-1 bg-gray-50 pt-12"
             behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
@@ -223,7 +214,7 @@ export default function EditProfileScreen() {
                 {/* Header Section */}
                 <View className="flex-row items-center gap-4 mb-8 mt-2">
                     <Back />
-                    <Text className="font-[ebold] text-2xl text-gray-800">Edit Profile</Text>
+                    <Text className="font-[ebold] text-2xl text-gray-800">{t('editProfileTitle')}</Text>
                 </View>
 
                 {/* Main Form Card */}
@@ -231,13 +222,14 @@ export default function EditProfileScreen() {
 
                     {/* Date of Birth */}
                     <View className="mb-6">
-                        <SectionLabel label="Date of birth" />
+                        <SectionLabel label={t('dateOfBirth')} />
                         <View className="w-full py-2 flex-row justify-center items-center bg-gray-50 rounded-2xl border border-gray-100 mt-2">
                             <DatePicker
                                 maximumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 15))}
                                 mode="date"
                                 value={form.date}
                                 onChange={(t, d: any) => setForm({ ...form, date: d })}
+                                locale={locale === 'th' ? 'th-TH' : 'en-GB'}
                             />
                         </View>
                     </View>
@@ -245,25 +237,25 @@ export default function EditProfileScreen() {
                     {/* Weight & Height (Row) */}
                     <View className="flex-row gap-4 mb-6">
                         <View className="flex-1">
-                            <SectionLabel label="Weight" />
+                            <SectionLabel label={t('weight')} />
                             <View className="mt-2">
                                 <NumberInput
                                     value={form.weight}
                                     onChange={(v) => set("weight", v)}
                                     placeholder="70"
-                                    unit="kg"
+                                    unit={t('kg')}
                                 />
                             </View>
                         </View>
 
                         <View className="flex-1">
-                            <SectionLabel label="Height" />
+                            <SectionLabel label={t('height')} />
                             <View className="mt-2">
                                 <NumberInput
                                     value={form.height}
                                     onChange={(v) => set("height", v)}
                                     placeholder="175"
-                                    unit="cm"
+                                    unit={t('cm')}
                                 />
                             </View>
                         </View>
@@ -271,23 +263,23 @@ export default function EditProfileScreen() {
 
                     {/* Caloric Deficit */}
                     <View className="mb-6">
-                        <SectionLabel label="Caloric Deficit" />
+                        <SectionLabel label={t('caloricDeficit')} />
                         <View className="mt-2">
                             <NumberInput
                                 value={form.fast}
                                 onChange={(v) => set("fast", v)}
                                 placeholder="แนะนำ 100 - 500"
-                                unit="kcal"
+                                unit={t('kcalLabel')}
                             />
                         </View>
                         <Text className="text-xs text-gray-400 font-[emedium] mt-2 ml-1">
-                            *ลดเพื่อการลดน้ำหนักที่ปลอดภัย (100 - 500 kcal)
+                            {t('deficitRecommendation')}
                         </Text>
                     </View>
 
                     {/* Gender */}
                     <View className="mb-2">
-                        <SectionLabel label="Gender" />
+                        <SectionLabel label={t('gender')} />
                         <View className="mt-2">
                             <SegmentedPicker<Sex>
                                 options={["male", "female"]}
@@ -318,7 +310,7 @@ export default function EditProfileScreen() {
                         <ActivityIndicator color="#fff" />
                     ) : (
                         <Text className="font-[ebold] text-white text-lg tracking-wide">
-                            Save Changes
+                            {t('saveChanges')}
                         </Text>
                     )}
                 </TouchableOpacity>

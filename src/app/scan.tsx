@@ -1,5 +1,6 @@
-import { View, Text, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity, SafeAreaView, Alert } from 'react-native';
 import { Camera, CameraView, CameraViewRef } from "expo-camera"
+import * as ImagePicker from 'expo-image-picker';
 import Icon from "@expo/vector-icons/Ionicons"
 import { use, useEffect, useRef, useState } from "react"
 import { analysis_food } from "@/methods/gemini.method"
@@ -9,17 +10,17 @@ import { useCurrentPickDate } from "@/stores/date.store"
 import dayjs from "dayjs"
 import { useAudioPlayer, setAudioModeAsync } from 'expo-audio';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useLanguageStore } from "@/stores/language.store";
 
 
 const audioSource = require('../../assets/sound/r1.mp3');
 
 const Scan = () => {
-
-
     const player = useAudioPlayer(audioSource);
     let cameraRef = useRef<CameraView>(null)
     let [loading, setLoading] = useState(false)
     let { currentDate } = useCurrentPickDate()
+    const { t } = useLanguageStore()
 
     useEffect(() => {
         setAudioModeAsync({
@@ -72,6 +73,47 @@ const Scan = () => {
         }
     };
 
+    const pickImage = async () => {
+        try {
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert(t('error'), 'Permission to access media library is required!');
+                return;
+            }
+
+            let result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ['images'],
+                allowsEditing: true,
+                quality: 0.5,
+            });
+
+            if (!result.canceled && result.assets && result.assets.length > 0) {
+                const pickedPhoto = result.assets[0];
+                player.play();
+                setLoading(true);
+                
+                let convert_thai = dayjs(currentDate).format("YYYY-MM-DD");
+                let res = await analysis_food(pickedPhoto as any, convert_thai);
+
+                if (res.statusCode === 201) {
+                    player.pause();
+                    player.seekTo(0);
+                    router.replace("/(tabs)/home");
+                    setLoading(false);
+                } else {
+                    setLoading(false);
+                    player.pause();
+                    player.seekTo(0);
+                    Alert.alert(t('error'), 'Failed to analyze food.');
+                }
+            }
+        } catch (error) {
+            console.error("Error picking image:", error);
+            setLoading(false);
+            Alert.alert(t('error'), 'An error occurred while picking the image.');
+        }
+    };
+
     return (
         <View className="flex-1 bg-black">
 
@@ -93,7 +135,7 @@ const Scan = () => {
                 {/* ป้ายกำกับ (Badge) */}
                 <View className="bg-black/40 px-5 py-2 rounded-full">
                     <Text className="text-white font-[ebold] text-sm tracking-wide">
-                        AI Food Scanner
+                        {t('aiFoodScanner')}
                     </Text>
                 </View>
 
@@ -115,28 +157,43 @@ const Scan = () => {
             </View>
 
 
-        
+
             {loading ? <Loading></Loading> : null}
 
-            {/* Bottom Controls (ปุ่มถ่ายภาพ / Loading) */}
+            {/* Bottom Controls (ปุ่มถ่ายภาพ / เลือกรูปภาพ / Loading) */}
             <View className="absolute bottom-12 w-full flex items-center justify-center z-20">
 
                 {!loading ?
-                    <View className="items-center">
+                    <View className="items-center w-full">
 
                         {/* คำแนะนำ */}
-                        <Text className="text-white/90 font-[emedium] text-sm mb-6 drop-shadow-lg">
-                            Position food in the center and tap
+                        <Text className="text-white/90 font-[emedium] text-sm mb-6 drop-shadow-lg text-center">
+                            {t('positionFoodCenter')}
                         </Text>
 
-                        {/* ปุ่ม Shutter สไตล์ iOS */}
-                        <TouchableOpacity
-                            onPress={takePicture}
-                            activeOpacity={0.8}
-                            className="w-[84px] h-[84px] rounded-full border-[4px] border-white/50 flex justify-center items-center"
-                        >
-                            <View className="w-[68px] h-[68px] bg-white rounded-full" />
-                        </TouchableOpacity>
+                        {/* Control Row */}
+                        <View className="flex-row items-center justify-between w-full px-10">
+                            {/* Dummy View to balance alignment */}
+                            <View className="w-14 h-14" />
+
+                            {/* Shutter button */}
+                            <TouchableOpacity
+                                onPress={takePicture}
+                                activeOpacity={0.8}
+                                className="w-[84px] h-[84px] rounded-full border-[4px] border-white/50 flex justify-center items-center"
+                            >
+                                <View className="w-[68px] h-[68px] bg-white rounded-full" />
+                            </TouchableOpacity>
+
+                            {/* Gallery picker */}
+                            <TouchableOpacity
+                                onPress={pickImage}
+                                activeOpacity={0.7}
+                                className="w-14 h-14 bg-black/40 border border-white/20 rounded-full flex justify-center items-center"
+                            >
+                                <Ionicons name="images" size={24} color="white" />
+                            </TouchableOpacity>
+                        </View>
 
                     </View>
                 : null}

@@ -6,19 +6,12 @@ import { Alert, Keyboard, Text, TextInput, TouchableOpacity, TouchableWithoutFee
 import { public_url } from "../../../config"
 import Icon from "@expo/vector-icons/Ionicons"
 import Animated, { useSharedValue, withSpring } from "react-native-reanimated"
-
-
+import { useLanguageStore } from "@/stores/language.store"
+import cookie from '@react-native-async-storage/async-storage'
 
 const Product = () => {
-
-
     let { id } = useLocalSearchParams()
-
-    console.log(id)
-
-
     let anim_opa = useSharedValue(0)
-
     let [select, setSelect] = useState<any>(null)
 
     let [portion, setPortion] = useState('')
@@ -30,17 +23,44 @@ const Product = () => {
     let [nameTemp, setNameTemp] = useState('')
 
     let [modalName, setModalName] = useState(false)
-
     let op_name = useSharedValue(0)
+    const { t } = useLanguageStore()
+
+    const toggleFavorite = async () => {
+        try {
+            anim_opa.value = 0
+            const favsStr = await cookie.getItem("favorite_foods")
+            let favs = favsStr ? JSON.parse(favsStr) : []
+            
+            const currentName = name || select?.name
+            const isFav = favs.some((item: any) => item.name === currentName)
+            
+            if (isFav) {
+                favs = favs.filter((item: any) => item.name !== currentName)
+                await cookie.setItem("favorite_foods", JSON.stringify(favs))
+                Alert.alert(t('success'), t('removedFromFav'))
+            } else {
+                const newItem = {
+                    name: currentName,
+                    calories: kcal || select?.calories,
+                    protein: protein || select?.protein,
+                    carbs: carbs || select?.carbs,
+                    fat: fat || select?.fat,
+                    quantity: portion || select?.quantity
+                }
+                favs.push(newItem)
+                await cookie.setItem("favorite_foods", JSON.stringify(favs))
+                Alert.alert(t('success'), t('savedToFav'))
+            }
+        } catch (e) {
+            console.error("Error toggling favorite:", e)
+        }
+    }
 
     useEffect(() => {
         (async () => {
             let f = new Food()
-
             let foodItem = await f.getFoodById(Number(id))
-
-
-            console.log(foodItem)
             setSelect(foodItem)
             setProtein(foodItem.protein)
             setCarbs(foodItem.carbs)
@@ -66,7 +86,7 @@ const Product = () => {
                     className="w-full h-full absolute top-0 left-0 bg-black/60 z-50 flex justify-center items-center px-6"
                 >
                     <View className="w-full bg-white rounded-3xl p-6 shadow-lg">
-                        <Text className="font-[ebold] text-xl text-gray-800 mb-4 text-center">Edit Food Name</Text>
+                        <Text className="font-[ebold] text-xl text-gray-800 mb-4 text-center">{t('editFoodName')}</Text>
 
                         <TextInput
                             textAlign="center"
@@ -84,7 +104,7 @@ const Product = () => {
                                     op_name.value = withSpring(0, { duration: 300 })
                                 }}
                             >
-                                <Text className="font-[ebold] text-lg text-gray-600">Cancel</Text>
+                                <Text className="font-[ebold] text-lg text-gray-600">{t('cancel')}</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
@@ -95,7 +115,7 @@ const Product = () => {
                                     op_name.value = withSpring(0, { duration: 300 })
                                 }}
                             >
-                                <Text className="font-[ebold] text-lg text-white">Save</Text>
+                                <Text className="font-[ebold] text-lg text-white">{t('save')}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -111,21 +131,19 @@ const Product = () => {
                     <Image style={{ tintColor: 'white', width: 24, height: 24 }} source={require('../../../assets/images/more.png')} />
                 </TouchableOpacity>
 
-                {/* Popup ลบ/Favorite */}
                 <Animated.View
                     style={{ opacity: anim_opa }}
                     className="w-[120px] bg-white rounded-2xl shadow-md absolute right-5 top-24 z-10"
                 >
-                    <TouchableOpacity className="py-4 w-full flex justify-center items-center border-b border-gray-100">
-                        <Text className="font-[ebold] text-gray-700">Favorite</Text>
+                    <TouchableOpacity onPress={toggleFavorite} className="py-4 w-full flex justify-center items-center border-b border-gray-100">
+                        <Text className="font-[ebold] text-gray-700">{t('favorite')}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => {
-
                         anim_opa.value = withSpring(anim_opa.value === 0 ? 1 : 0, { duration: 300 })
-                        Alert.alert("Are you sure you want to delete this item?", "This action cannot be undone.", [
-                            { text: 'Cancel' },
+                        Alert.alert(t('confirmDelete'), t('deleteFoodConfirmMsg'), [
+                            { text: t('cancel') },
                             {
-                                text: 'Delete',
+                                text: t('delete'),
                                 style: "destructive",
                                 onPress: async () => {
                                     let f = new Food()
@@ -137,7 +155,7 @@ const Product = () => {
                             }
                         ])
                     }} className="py-4 w-full flex justify-center items-center">
-                        <Text className="font-[ebold] text-red-500">Delete</Text>
+                        <Text className="font-[ebold] text-red-500">{t('delete')}</Text>
                     </TouchableOpacity>
                 </Animated.View>
 
@@ -173,7 +191,7 @@ const Product = () => {
                         <View className="w-full px-5 py-4 flex-row justify-between items-center bg-gray-50 border border-gray-100 rounded-2xl">
                             <View className="flex-row items-center gap-3">
                                 <Icon name="nutrition-outline" size={22} color="#4B5563" />
-                                <Text className="font-[ebold] text-lg text-gray-700">Portion</Text>
+                                <Text className="font-[ebold] text-lg text-gray-700">{t('portion')}</Text>
                             </View>
                             <TextInput
                                 keyboardType="number-pad"
@@ -188,7 +206,7 @@ const Product = () => {
                         <View className="w-full px-5 py-4 flex-row justify-between items-center bg-orange-50 border border-orange-100 rounded-2xl">
                             <View className="flex-row items-center gap-3">
                                 <Image style={{ width: 22, height: 22 }} source={require('../../../assets/images/fire.png')} />
-                                <Text className="font-[ebold] text-lg text-orange-700">Kcal</Text>
+                                <Text className="font-[ebold] text-lg text-orange-700">{t('kcalLabel')}</Text>
                             </View>
                             <TextInput
                                 keyboardType="number-pad"
@@ -204,7 +222,7 @@ const Product = () => {
                     {/* ส่วน Macros (Protein, Carbs, Fat) */}
                     <View className="flex-row gap-3 mt-3">
                         <View className="flex-1 py-4 items-center bg-gray-50 border border-gray-100 rounded-2xl">
-                            <Text className="font-[ebold] text-xs text-gray-500 uppercase tracking-wider mb-1">Protein</Text>
+                            <Text className="font-[ebold] text-xs text-gray-500 uppercase tracking-wider mb-1">{t('protein')}</Text>
                             <TextInput
                                 keyboardType="number-pad"
                                 onFocus={() => setProtein('')}
@@ -216,7 +234,7 @@ const Product = () => {
                         </View>
 
                         <View className="flex-1 py-4 items-center bg-gray-50 border border-gray-100 rounded-2xl">
-                            <Text className="font-[ebold] text-xs text-gray-500 uppercase tracking-wider mb-1">Carbs</Text>
+                            <Text className="font-[ebold] text-xs text-gray-500 uppercase tracking-wider mb-1">{t('carbs')}</Text>
                             <TextInput
                                 keyboardType="number-pad"
                                 onFocus={() => setCarbs('')}
@@ -228,7 +246,7 @@ const Product = () => {
                         </View>
 
                         <View className="flex-1 py-4 items-center bg-gray-50 border border-gray-100 rounded-2xl">
-                            <Text className="font-[ebold] text-xs text-gray-500 uppercase tracking-wider mb-1">Fat</Text>
+                            <Text className="font-[ebold] text-xs text-gray-500 uppercase tracking-wider mb-1">{t('fat')}</Text>
                             <TextInput
                                 keyboardType="number-pad"
                                 onFocus={() => setFat('')}
@@ -254,7 +272,7 @@ const Product = () => {
                             className="w-full rounded-2xl py-4 items-center justify-center bg-green-600 shadow-sm shadow-green-300"
                         >
                             <Text className="text-white font-[ebold] text-lg tracking-wide">
-                                Update Food
+                                {t('updateFood')}
                             </Text>
                         </TouchableOpacity>
 
@@ -264,7 +282,7 @@ const Product = () => {
                             className="w-full rounded-2xl py-4 items-center justify-center bg-gray-100"
                         >
                             <Text className="text-gray-600 font-[ebold] text-lg tracking-wide">
-                                Cancel
+                                {t('cancel')}
                             </Text>
                         </TouchableOpacity>
                     </View>

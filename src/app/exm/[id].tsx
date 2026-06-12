@@ -7,20 +7,20 @@ import { Excercise } from "@/class/excercise.class"
 import Exercise from "../exercise"
 //@ts-ignore
 import Icon from "react-native-vector-icons/Ionicons"
+import { useLanguageStore } from "@/stores/language.store"
 
 const Exm = () => {
-
-
+    const { t } = useLanguageStore()
+    let { id, activity, caloriesBurned } = useLocalSearchParams()
+    
     const [form, setForm] = useState<any>({
-        activity: "",
-        caloriesBurned: 0
+        activity: activity ? String(activity) : "",
+        caloriesBurned: caloriesBurned ? String(caloriesBurned) : ""
     })
 
-    let { id } = useLocalSearchParams()
-
     const fields = [
-        { key: "activity", label: "Activity", placeholder: "ex. running in the park", keyboardType: "default" },
-        { key: "caloriesBurned", label: "Calories Burned", placeholder: "ex. 300", keyboardType: "numeric" },
+        { key: "activity", label: t('activityLabel'), placeholder: t('activityPlaceholder'), keyboardType: "default" },
+        { key: "caloriesBurned", label: t('caloriesBurned'), placeholder: "ex. 300", keyboardType: "numeric" },
     ]
 
     return (
@@ -34,7 +34,7 @@ const Exm = () => {
                 <View className="flex-row items-center gap-3">
                     <Back />
                     <Text className="font-[ebold] text-2xl text-gray-900">
-                        Add Exercise
+                        {t('addExercise')}
                     </Text>
                 </View>
             </View>
@@ -43,7 +43,7 @@ const Exm = () => {
                 {/* Fields Card */}
                 <View className="bg-white rounded-2xl p-5 shadow-sm mb-6 gap-4">
                     <Text className="font-[ebold] text-xs text-green-600 uppercase">
-                        Exercise Details
+                        {t('exerciseDetails')}
                     </Text>
                     {fields.map((field: any) => (
                         <View key={field.key}>
@@ -89,7 +89,7 @@ const Exm = () => {
                                 router.replace("/home")
                             }
                         } else {
-                            Alert.alert("ข้อมูลไม่ครบถ้วน")
+                            Alert.alert(t('incompleteData'))
                         }
                     }}
                     className="bg-green-500 rounded-2xl items-center"
@@ -103,7 +103,7 @@ const Exm = () => {
                     }}
                 >
                     <Text style={{ color: 'white', fontFamily: 'ebold', fontSize: 18 }}>
-                        Save Exercise
+                        {t('saveExercise')}
                     </Text>
                 </TouchableOpacity>
             </View>
