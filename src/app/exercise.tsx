@@ -5,38 +5,29 @@ import Back from "@/components/back"
 import { Food } from "@/class/food.class"
 import { Excercise } from "@/class/excercise.class"
 import Loading from "@/components/loading"
+import { useLanguageStore } from "@/stores/language.store"
 
 const Exercise = () => {
     const INTENSITY = ["chill", "normal", "tired"]
-
     const [intensity, setIntensity] = useState("normal")
-
-
     const [form, setForm] = useState<any>({
         activity: "",
         duration: 0,
     })
-
-
     let [loading, setLoading] = useState(false)
-
     let { id } = useLocalSearchParams()
+    const { t } = useLanguageStore()
 
     const fields = [
-        { key: "activity", label: "Activity", placeholder: "ex. running in the park", keyboardType: "default" },
-        { key: "duration", label: "Duration (minutes)", placeholder: "30", keyboardType: "numeric" },
+        { key: "activity", label: t('activityLabel'), placeholder: t('activityPlaceholder'), keyboardType: "default" },
+        { key: "duration", label: t('durationLabel'), placeholder: t('durationPlaceholder'), keyboardType: "numeric" },
     ]
 
     console.log("man : ", id)
 
     return (
-
         <View className="flex-1">
-
-            {loading ? <Loading>
-
-            </Loading> : null}
-
+            {loading ? <Loading></Loading> : null}
 
             <ScrollView
                 className="flex-1 bg-[#F8FAF7]"
@@ -48,7 +39,7 @@ const Exercise = () => {
                     <View className="flex-row items-center gap-3">
                         <Back />
                         <Text className="font-[ebold] text-2xl text-gray-900">
-                            Add Exercise
+                            {t('addExercise')}
                         </Text>
                     </View>
                 </View>
@@ -57,7 +48,7 @@ const Exercise = () => {
                     {/* Fields Card */}
                     <View className="bg-white rounded-2xl p-5 shadow-sm mb-4 gap-4">
                         <Text className="font-[ebold] text-xs text-green-600 uppercase">
-                            Exercise Details
+                            {t('exerciseDetails')}
                         </Text>
                         {fields.map((field: any) => (
                             <View key={field.key}>
@@ -94,7 +85,7 @@ const Exercise = () => {
                     {/* Intensity Card */}
                     <View className="bg-white rounded-2xl p-5 shadow-sm mb-6">
                         <Text className="font-[ebold] text-xs text-green-600 uppercase" style={{ marginBottom: 14 }}>
-                            Intensity
+                            {t('intensityLabel')}
                         </Text>
                         <View className="flex-row gap-2">
                             {INTENSITY.map((level) => (
@@ -114,7 +105,7 @@ const Exercise = () => {
                                         fontSize: 13,
                                         color: intensity === level ? '#FFFFFF' : '#6B7280',
                                     }}>
-                                        {level}
+                                        {t(level as any)}
                                     </Text>
                                 </TouchableOpacity>
                             ))}
@@ -130,13 +121,12 @@ const Exercise = () => {
                                 let e = new Excercise()
                                 let res = await e.addEx(form.activity, form.duration, intensity, Number(id))
 
-
                                 if (res.statusCode === 201) {
                                     setLoading(false)
                                     router.replace('/home')
                                 }
                             } else {
-                                Alert.alert("ข้อมูลไม่ครบถ้วน")
+                                Alert.alert(t('incompleteData'))
                             }
                         }}
                         className="bg-green-500 rounded-2xl items-center"
@@ -150,7 +140,7 @@ const Exercise = () => {
                         }}
                     >
                         <Text style={{ color: 'white', fontFamily: 'ebold', fontSize: 18 }}>
-                            Save Exercise
+                            {t('saveExercise')}
                         </Text>
                     </TouchableOpacity>
                 </View>

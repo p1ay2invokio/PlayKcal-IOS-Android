@@ -5,12 +5,15 @@ import DatePicker from '@react-native-community/datetimepicker'
 import { Image } from "expo-image"
 import { useRouter } from "expo-router"
 import { useMeasureStore } from "@/stores/measure.store"
+import { useLanguageStore } from "@/stores/language.store"
+import { Ionicons } from "@expo/vector-icons"
 
 const Dob = () => {
 
     let navigate = useRouter()
 
     let { nextPage, previousPage, setDob, dob } = useMeasureStore()
+    const { locale, setLocale, t } = useLanguageStore()
 
     let [today, setToday] = useState(new Date())
 
@@ -34,7 +37,24 @@ const Dob = () => {
     }, [])
 
     return (
-        <View className="flex-1 bg-white px-6">
+        <View className="flex-1 bg-white px-6" key={locale}>
+
+            {/* ปุ่มเปลี่ยนภาษา มุมซ้ายบน */}
+            <Animated.View className="absolute top-16 left-6 z-10">
+                <TouchableOpacity
+                    onPress={async () => {
+                        const nextLocale = locale === 'th' ? 'en' : 'th';
+                        await setLocale(nextLocale);
+                    }}
+                    activeOpacity={0.7}
+                    className="bg-gray-50 border border-gray-200 px-4 py-2 rounded-full flex-row items-center gap-1.5"
+                >
+                    <Ionicons name="language" size={14} color="#64748b" />
+                    <Text className="font-[ebold] text-gray-600 text-sm">
+                        {locale === 'th' ? 'EN' : 'TH'}
+                    </Text>
+                </TouchableOpacity>
+            </Animated.View>
 
             {/* ปุ่ม Login มุมขวาบน (ปรับเป็นทรง Pill มินิมอล) */}
             <Animated.View className="absolute top-16 right-6 z-10">
@@ -43,7 +63,7 @@ const Dob = () => {
                     activeOpacity={0.7}
                     className="bg-gray-50 border border-gray-200 px-5 py-2 rounded-full"
                 >
-                    <Text className="font-[ebold] text-gray-600 text-sm">Login</Text>
+                    <Text className="font-[ebold] text-gray-600 text-sm">{t('loginButton')}</Text>
                 </TouchableOpacity>
             </Animated.View>
 
@@ -64,7 +84,7 @@ const Dob = () => {
 
                 {/* ข้อความบอกให้ใส่วันเกิด */}
                 <Text className="font-[ebold] text-2xl text-gray-800 mb-4 text-center">
-                    When is your birthday?
+                    {t('whenIsYourBirthday')}
                 </Text>
 
                 <Animated.View style={anitimer} className="bg-gray-50 py-6 px-4 rounded-[32px] w-full items-center border border-gray-100 shadow-sm shadow-gray-100">
@@ -78,6 +98,7 @@ const Dob = () => {
                         }}
                         themeVariant="light"
                         textColor="black"
+                        locale={locale === 'th' ? 'th-TH' : 'en-GB'}
                     />
                 </Animated.View>
             </View>
@@ -90,7 +111,7 @@ const Dob = () => {
                     className="w-full rounded-[24px] bg-gray-900 py-4 items-center flex justify-center shadow-md shadow-gray-400/30"
                 >
                     <Text className="font-[ebold] text-white text-xl tracking-wide">
-                        Get Started
+                        {t('getStarted')}
                     </Text>
                 </TouchableOpacity>
             </Animated.View>

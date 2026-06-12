@@ -4,15 +4,17 @@ import { Text, TouchableOpacity, View } from "react-native"
 import Animated from "react-native-reanimated";
 import { RulerPicker } from 'react-native-ruler-picker';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useLanguageStore } from "@/stores/language.store";
 
 const Weight = () => {
 
     let navigate = useRouter()
 
     let { nextPage, previousPage, setWeight, weight, current, setCurrent } = useMeasureStore()
+    const { t, locale } = useLanguageStore()
 
     return (
-        <View className="flex-1 bg-white px-6">
+        <View className="flex-1 bg-white px-6" key={locale}>
 
             {/* ปุ่ม Back (สไตล์วงกลมแบบเดียวกับหน้าก่อนๆ) */}
             <TouchableOpacity
@@ -25,10 +27,10 @@ const Weight = () => {
             {/* Header Section */}
             <View className="items-center mt-36 mb-10">
                 <Text className="font-[ebold] text-3xl text-gray-800 mb-3 text-center">
-                    What's your weight?
+                    {t('whatsYourWeight')}
                 </Text>
                 <Text className="font-[emedium] text-base text-gray-500 text-center px-4">
-                    This helps us calculate your BMI and daily calorie needs.
+                    {t('weightDesc')}
                 </Text>
             </View>
 
@@ -43,7 +45,7 @@ const Weight = () => {
                         initialValue={60} // เพิ่มค่าเริ่มต้นให้ UX ดีขึ้น
                         decelerationRate={'normal'}
                         onValueChangeEnd={(number: any) => setWeight(number)}
-                        unit="kg"
+                        unit={t('kg')}
                         height={60}
                         width={280}
                         //@ts-ignore
@@ -62,7 +64,7 @@ const Weight = () => {
                     className="w-full rounded-[24px] bg-gray-900 py-4 items-center flex justify-center shadow-md shadow-gray-400/30"
                 >
                     <Text className="font-[ebold] text-white text-xl tracking-wide">
-                        Continue
+                        {t('continueButton')}
                     </Text>
                 </TouchableOpacity>
             </Animated.View>

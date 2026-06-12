@@ -1,6 +1,6 @@
 import { Alert, Linking, Pressable, ScrollView, Text, Touchable, TouchableOpacity, View } from "react-native"
 import GaugeCircle from "../../components/gaugecircle"
-import { SafeAreaView } from "react-native-safe-area-context"
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { Image } from "expo-image"
 import cookie from '@react-native-async-storage/async-storage'
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -18,10 +18,13 @@ import * as Haptic from 'expo-haptics'
 import { useCurrentPickDate } from "@/stores/date.store"
 import { Excercise } from "@/class/excercise.class"
 import { Stat } from "@/class/stat.class"
+import { useLanguageStore } from "@/stores/language.store"
 
 const Dashboard = () => {
 
     let navigate = useRouter()
+    const { t, locale } = useLanguageStore()
+    const insets = useSafeAreaInsets()
 
     let [calendarModal, setCalendarModal] = useState(false)
 
@@ -86,9 +89,9 @@ const Dashboard = () => {
             console.log("ED : ", res)
 
             if (!user_data.weight || !user_data.height || !user_data.dob || !user_data.sex || !user_data.fast) {
-                Alert.alert("You have to set your personal information first", '', [
+                Alert.alert(t('settingRequired'), '', [
                     {
-                        text: "Setting",
+                        text: t('settingButton'),
                         onPress() {
                             navigate.push("/editProfile")
                         }
@@ -208,10 +211,10 @@ const Dashboard = () => {
                         </View>
                         <View className="flex-1">
                             <Text className="font-[ebold] text-sm text-gray-900 dark:text-white">
-                                Forecast Weight in 7 Days
+                                {t('forecastWeight7Days')}
                             </Text>
                             <Text className="font-[eregular] text-xs text-gray-400 mt-0.5">
-                                How this estimate is calculated
+                                {t('howCalculation')}
                             </Text>
                         </View>
 
@@ -235,15 +238,14 @@ const Dashboard = () => {
                             <View className="flex-row items-center gap-2">
                                 <Ionicons name="analytics-outline" size={14} color="#059669" />
                                 <Text className="font-[emedium] text-sm text-gray-800 dark:text-gray-100">
-                                    Calorie forecast method
+                                    {t('forecastMethod')}
                                 </Text>
                             </View>
                             <Text className="font-[eregular] text-xs text-gray-500 dark:text-gray-400 leading-5">
-                                Daily calorie forecasts use your recent records. Missing days are filled
-                                with the average of available days within the last 7 days.
+                                {t('forecastMethodDesc')}
                             </Text>
                             <Text className="font-[eregular] text-xs text-gray-500 dark:text-gray-400 leading-5">
-                                This assumes your eating habits will remain similar to recent behavior.
+                                {t('forecastMethodDesc2')}
                             </Text>
                         </View>
 
@@ -255,7 +257,7 @@ const Dashboard = () => {
                             <View className="flex-row items-center gap-2">
                                 <Ionicons name="calculator-outline" size={14} color="#059669" />
                                 <Text className="font-[emedium] text-sm text-gray-800 dark:text-gray-100">
-                                    BMR formula
+                                    {t('bmrFormula')}
                                 </Text>
                                 <View className="bg-gray-100 dark:bg-gray-800 rounded-full px-2 py-0.5">
                                     <Text className="font-[eregular] text-[10px] text-gray-400">
@@ -267,7 +269,7 @@ const Dashboard = () => {
                             {/* Male */}
                             <View className="bg-emerald-50 dark:bg-emerald-900/25 rounded-2xl px-4 py-3">
                                 <Text className="font-[emedium] text-[10px] text-emerald-600 dark:text-emerald-400 tracking-widest uppercase mb-1">
-                                    Male
+                                    {t('male')}
                                 </Text>
                                 <Text className="font-[eregular] text-xs text-emerald-900 dark:text-emerald-200 leading-5">
                                     (10 × W) + (6.25 × H) − (5 × A) + 5
@@ -277,7 +279,7 @@ const Dashboard = () => {
                             {/* Female */}
                             <View className="bg-pink-50 dark:bg-pink-900/25 rounded-2xl px-4 py-3">
                                 <Text className="font-[emedium] text-[10px] text-pink-500 dark:text-pink-400 tracking-widest uppercase mb-1">
-                                    Female
+                                    {t('female')}
                                 </Text>
                                 <Text className="font-[eregular] text-xs text-pink-900 dark:text-pink-200 leading-5">
                                     (10 × W) + (6.25 × H) − (5 × A) − 161
@@ -285,7 +287,7 @@ const Dashboard = () => {
                             </View>
 
                             <Text className="font-[eregular] text-[10px] text-gray-400 dark:text-gray-500">
-                                W = weight (kg) · H = height (cm) · A = age (yrs)
+                                {t('bmrFormulaDesc')}
                             </Text>
                         </View>
 
@@ -297,13 +299,13 @@ const Dashboard = () => {
                             <View className="flex-row items-center gap-2">
                                 <Ionicons name="flame-outline" size={14} color="#059669" />
                                 <Text className="font-[emedium] text-sm text-gray-800 dark:text-gray-100">
-                                    Maintenance calories (TDEE)
+                                    {t('maintenanceCalories')}
                                 </Text>
                             </View>
                             <View className="bg-gray-50 dark:bg-gray-800/60 rounded-2xl overflow-hidden">
                                 <View className="flex-row justify-between items-center px-4 py-3 border-b border-gray-100 dark:border-gray-700/50">
                                     <Text className="font-[eregular] text-xs text-gray-500 dark:text-gray-400">
-                                        Daily (TDEE)
+                                        {t('dailyTdee')}
                                     </Text>
                                     <Text className="font-[emedium] text-xs text-gray-800 dark:text-gray-200">
                                         BMR × 1.2
@@ -311,7 +313,7 @@ const Dashboard = () => {
                                 </View>
                                 <View className="flex-row justify-between items-center px-4 py-3">
                                     <Text className="font-[eregular] text-xs text-gray-500 dark:text-gray-400">
-                                        Weekly maintenance
+                                        {t('weeklyMaintenance')}
                                     </Text>
                                     <Text className="font-[emedium] text-xs text-gray-800 dark:text-gray-200">
                                         TDEE × 7
@@ -327,16 +329,13 @@ const Dashboard = () => {
                             <View className="flex-row items-center gap-2">
                                 <Ionicons name="scale-outline" size={14} color="#059669" />
                                 <Text className="font-[emedium] text-sm text-gray-800 dark:text-gray-100">
-                                    Stat 7 day back
+                                    {t('stat7Days')}
                                 </Text>
                             </View>
                             <View className="bg-gray-50 dark:bg-gray-800/60 rounded-2xl overflow-hidden">
                                 <View className="px-4 py-3 border-b border-gray-100 dark:border-gray-700/50">
                                     <Text className="font-[emedium] text-xs text-gray-800 dark:text-gray-200">
-                                        Σ Weekly Calories = 14,050 kcal
-                                    </Text>
-                                    <Text className="font-[eregular] text-[10px] text-gray-500 dark:text-gray-400">
-                                        2,000 + 2,000 + 1,800 + 2,200 + 2,100 + 1,900 + 2,050
+                                        {t('sumWeeklyCalories')} = {predictDays} kcal
                                     </Text>
                                 </View>
                             </View>
@@ -345,7 +344,7 @@ const Dashboard = () => {
                             <View className="flex-row items-start gap-2 bg-amber-50 dark:bg-amber-900/20 rounded-2xl px-4 py-3">
                                 <Ionicons name="information-circle-outline" size={14} color="#d97706" style={{ marginTop: 1 }} />
                                 <Text className="font-[eregular] text-xs text-amber-700 dark:text-amber-300 leading-5 flex-1">
-                                    If a user has fewer than 7 days of records, the app will use the average of the available data to fill the missing days, assuming the user will maintain a similar eating pattern.
+                                    {t('avgDataInfo')}
                                 </Text>
                             </View>
 
@@ -353,7 +352,7 @@ const Dashboard = () => {
                             <View className="flex-row items-start gap-2 bg-amber-50 dark:bg-amber-900/20 rounded-2xl px-4 py-3">
                                 <Ionicons name="information-circle-outline" size={14} color="#d97706" style={{ marginTop: 1 }} />
                                 <Text className="font-[eregular] text-xs text-amber-700 dark:text-amber-300 leading-5 flex-1">
-                                    7,700 kcal ≈ 1 kg body weight — a widely used clinical estimate ¹
+                                    {t('clinicalEstimate')}
                                 </Text>
                             </View>
                         </View>
@@ -366,13 +365,13 @@ const Dashboard = () => {
                             <View className="flex-row items-center gap-2">
                                 <Ionicons name="scale-outline" size={14} color="#059669" />
                                 <Text className="font-[emedium] text-sm text-gray-800 dark:text-gray-100">
-                                    Weight change estimation
+                                    {t('estimatedWeightChange')}
                                 </Text>
                             </View>
                             <View className="bg-gray-50 dark:bg-gray-800/60 rounded-2xl overflow-hidden">
                                 <View className="px-4 py-3 border-b border-gray-100 dark:border-gray-700/50">
                                     <Text className="font-[eregular] text-[10px] text-gray-400 mb-1">
-                                        Calorie balance
+                                        {t('calorieDeficit')}
                                     </Text>
                                     <Text className="font-[emedium] text-xs text-gray-800 dark:text-gray-200">
                                         Weekly Calories − Weekly maintenance
@@ -380,7 +379,7 @@ const Dashboard = () => {
                                 </View>
                                 <View className="px-4 py-3">
                                     <Text className="font-[eregular] text-[10px] text-gray-400 mb-1">
-                                        Weight change (kg)
+                                        {t('expectedWeightLoss')} (kg)
                                     </Text>
                                     <Text className="font-[emedium] text-xs text-gray-800 dark:text-gray-200">
                                         Calorie balance ÷ 7,700
@@ -392,7 +391,7 @@ const Dashboard = () => {
                             <View className="flex-row items-start gap-2 bg-amber-50 dark:bg-amber-900/20 rounded-2xl px-4 py-3">
                                 <Ionicons name="information-circle-outline" size={14} color="#d97706" style={{ marginTop: 1 }} />
                                 <Text className="font-[eregular] text-xs text-amber-700 dark:text-amber-300 leading-5 flex-1">
-                                    7,700 kcal ≈ 1 kg body weight — a widely used clinical estimate ¹
+                                    {t('clinicalEstimate')}
                                 </Text>
                             </View>
                         </View>
@@ -403,7 +402,7 @@ const Dashboard = () => {
                         {/* References */}
                         <View className="gap-2">
                             <Text className="font-[emedium] text-xs text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-                                References
+                                {t('references')}
                             </Text>
                             <TouchableOpacity
                                 onPress={() => Linking.openURL('https://doi.org/10.1016/S0140-6736(11)60812-X')}
@@ -442,8 +441,7 @@ const Dashboard = () => {
                         <View className="flex-row items-start gap-2 pb-1">
                             <Ionicons name="alert-circle-outline" size={13} color="#d1d5db" style={{ marginTop: 1 }} />
                             <Text className="font-[eregular] text-[10px] text-gray-300 dark:text-gray-600 leading-[16px] flex-1">
-                                For wellness and educational purposes only. Actual results may vary based on activity,
-                                metabolism, hydration, and other factors. Not intended as medical advice or diagnosis.
+                                {t('disclaimerDesc')}
                             </Text>
                         </View>
 
@@ -451,7 +449,13 @@ const Dashboard = () => {
                 </View>
             </Animated.View>
 
-            <ScrollView style={{ flex: 1, paddingTop: 50 }}>
+            <ScrollView 
+                style={{ flex: 1 }}
+                contentContainerStyle={{ 
+                    paddingTop: insets.top > 0 ? insets.top : 20, 
+                    paddingBottom: insets.bottom > 0 ? insets.bottom + 100 : 120, 
+                }}
+            >
                 <View className="w-full h-[70px] justify-between flex-row px-5">
 
                     <View className="flex-row items-center gap-2">
@@ -459,7 +463,7 @@ const Dashboard = () => {
                         <Image style={{ width: 60, height: 60 }} source={require("../../../assets/images/rabbit.png")} className="w-full h-full object-cover" />
                         <View>
                             <Text className="font-[mbold] text-2xl text-gray-600">PLAY<Text className="text-amber-500">K</Text><Text className="text-red-500">C</Text><Text className="text-emerald-600">A</Text><Text className="text-blue-400">L</Text></Text>
-                            <Text className="font-[mbold] text-md text-gray-600">calories deficit</Text>
+                            <Text className="font-[mbold] text-md text-gray-600">{t('caloriesDeficitSub')}</Text>
                         </View>
 
                     </View>
@@ -490,10 +494,10 @@ const Dashboard = () => {
                             {/* Header Title */}
                             <View className="flex justify-center items-center">
                                 <Text className="font-[ebold] text-gray-800 text-lg">
-                                    Forecast Weight
+                                    {t('forecastWeight')}
                                 </Text>
                                 <Text className="font-[eregular] mt-[-5px] text-gray-400 text-sm">
-                                    Based on Your Last 7 Days of Records
+                                    {t('basedOn7Days')}
                                 </Text>
                             </View>
 
@@ -567,7 +571,7 @@ const Dashboard = () => {
                                 userDetail ? (
                                     <View className="bg-gray-50 rounded-2xl p-4 items-center w-full">
                                         <Text className="font-[eregular] text-gray-500 text-sm mb-1">
-                                            Expected on {dayjs().add(7, 'day').format("DD MMM YYYY")}
+                                            {t('expectedOn')} {dayjs().add(7, 'day').format("DD MMM YYYY")}
                                         </Text>
                                         <View className="flex flex-row items-baseline">
                                             <Text className="font-[ebold] text-gray-800 text-2xl">
@@ -576,14 +580,14 @@ const Dashboard = () => {
                                             <Text className="font-[eregular] text-gray-500 text-sm ml-1">kg</Text>
                                         </View>
                                         <Text className="font-[eregular] text-gray-400 text-sm mt-1">
-                                            (Current weight: {userDetail.weight} kg)
+                                            {t('currentWeight', { weight: userDetail.weight })}
                                         </Text>
                                     </View>
                                 ) : null
                             ) : (
                                 <View className="bg-red-50 rounded-2xl p-4 items-center w-full">
                                     <Text className="font-[eregular] text-red-500 text-sm text-center">
-                                        Calories of the week must be more than 0
+                                        {t('weekCaloriesError')}
                                     </Text>
                                 </View>
                             )}
@@ -591,11 +595,45 @@ const Dashboard = () => {
                     </View>
                 </View>
 
-                <Animated.View style={[useAnimatedStyle(() => ({ opacity: opacity.value }))]} className="absolute top-16 left-[30px] border border-gray-200 shadow bg-white z-[1] rounded-xl">
-                    <DatePicker themeVariant="light" textColor="black" style={{ backgroundColor: 'white', borderRadius: 12 }} display="inline" value={selectDay} onChange={(e, d) => {
-                        setCurrentDate(d)
-                        opacity.value = withTiming(0, { duration: 200 })
-                    }} />
+                {calendarModal && (
+                    <Pressable
+                        style={{
+                            position: 'absolute',
+                            top: -1000,
+                            left: -1000,
+                            right: -1000,
+                            bottom: -1000,
+                            height: 4000,
+                            backgroundColor: 'transparent',
+                            zIndex: 1,
+                        }}
+                        onPress={() => {
+                            opacity.value = withTiming(0, { duration: 200 })
+                            setCalendarModal(false)
+                        }}
+                    />
+                )}
+
+                <Animated.View 
+                    pointerEvents={calendarModal ? 'auto' : 'none'}
+                    style={[useAnimatedStyle(() => ({ opacity: opacity.value }))]} 
+                    className="absolute top-16 left-[30px] border border-gray-200 shadow bg-white z-[2] rounded-xl"
+                >
+                    <DatePicker 
+                        themeVariant="light" 
+                        textColor="black" 
+                        style={{ backgroundColor: 'white', borderRadius: 12 }} 
+                        display="inline" 
+                        value={selectDay} 
+                        locale={locale === 'th' ? 'th-TH' : 'en-GB'}
+                        onChange={(e, d) => {
+                            if (d) {
+                                setCurrentDate(d)
+                            }
+                            opacity.value = withTiming(0, { duration: 200 })
+                            setCalendarModal(false)
+                        }} 
+                    />
                 </Animated.View>
 
                 <View className="w-full bg-white rounded-3xl p-5 mt-[-20px] my-4 flex flex-row justify-between items-center">
@@ -612,18 +650,18 @@ const Dashboard = () => {
                             label={`${(dailyDetail.dailyCalories - dailyDetail.totalCalories) + dailyDetail.totalBurned + dailyDetail.appleBurned}`}
                             color="#10b981"
                         />
-                        <Text className="font-[ebold] text-gray-700 mt-[-20px] text-[14px]">Remaining</Text>
-                        <Text className="font-[eregular] text-gray-400 text-[12px] mb-3">kcal</Text>
+                        <Text className="font-[ebold] text-gray-700 mt-[-20px] text-[14px]">{t('remaining')}</Text>
+                        <Text className="font-[eregular] text-gray-400 text-[12px] mb-3">{t('kcalLabel')}</Text>
 
                         {/* Consumed & Burned Stats */}
                         <View className="flex flex-row w-full justify-between px-2 mt-1">
                             <View className="flex flex-col items-center">
-                                <Text className="font-[eregular] text-gray-400 text-sm">Consumed</Text>
+                                <Text className="font-[eregular] text-gray-400 text-sm">{t('consumed')}</Text>
                                 <Text className="font-[esemibold] text-gray-700 text-md">{dailyDetail.totalCalories}</Text>
                             </View>
                             <View className="w-[1px] bg-gray-200 h-full mx-2"></View>
                             <View className="flex flex-col items-center">
-                                <Text className="font-[eregular] text-gray-400 text-sm">Burned</Text>
+                                <Text className="font-[eregular] text-gray-400 text-sm">{t('burned')}</Text>
                                 <Text className="font-[esemibold] text-gray-700 text-md">{dailyDetail.totalBurned + dailyDetail.appleBurned}</Text>
                             </View>
                         </View>
@@ -637,7 +675,7 @@ const Dashboard = () => {
                             <View className="flex flex-row justify-between items-end mb-1">
                                 <View className="flex flex-row items-center gap-2">
                                     <Image style={{ width: 30, height: 30 }} source={require("../../../assets/images/protein.png")} resizeMode="contain" />
-                                    <Text className="font-[esemibold] text-gray-700 text-md">Protein</Text>
+                                    <Text className="font-[esemibold] text-gray-700 text-md">{t('protein')}</Text>
                                 </View>
                                 <Text className="font-[eregular] text-gray-500 text-[11px]">
                                     {dailyDetail.totalProtein} / {dailyDetail.dailyProtein}g
@@ -656,7 +694,7 @@ const Dashboard = () => {
                             <View className="flex flex-row justify-between items-end mb-1">
                                 <View className="flex flex-row items-center gap-2">
                                     <Image style={{ width: 30, height: 30 }} source={require("../../../assets/images/rices.png")} resizeMode="contain" />
-                                    <Text className="font-[esemibold] text-gray-700 text-md">Carbs</Text>
+                                    <Text className="font-[esemibold] text-gray-700 text-md">{t('carbs')}</Text>
                                 </View>
                                 <Text className="font-[eregular] text-gray-500 text-[11px]">
                                     {dailyDetail.totalCarbs} / {dailyDetail.dailyCarbs}g
@@ -675,7 +713,7 @@ const Dashboard = () => {
                             <View className="flex flex-row justify-between items-end mb-1">
                                 <View className="flex flex-row items-center gap-2">
                                     <Image style={{ width: 30, height: 30 }} source={require("../../../assets/images/cheese.png")} resizeMode="contain" />
-                                    <Text className="font-[esemibold] text-gray-700 text-md">Fat</Text>
+                                    <Text className="font-[esemibold] text-gray-700 text-md">{t('fat')}</Text>
                                 </View>
                                 <Text className="font-[eregular] text-gray-500 text-[11px]">
                                     {dailyDetail.totalFat} / {dailyDetail.dailyFat}g
@@ -696,7 +734,7 @@ const Dashboard = () => {
                     {/* Header Section */}
                     <View className="mt-6 flex flex-row gap-4 items-center w-full justify-center px-6">
                         <View className="flex-1 h-[1px] bg-gray-200" />
-                        <Text className="font-[esemibold] text-gray-400 text-base tracking-wide">Food and Activities</Text>
+                        <Text className="font-[esemibold] text-gray-400 text-base tracking-wide">{t('foodActivities')}</Text>
                         <View className="flex-1 h-[1px] bg-gray-200" />
                     </View>
 
@@ -720,17 +758,17 @@ const Dashboard = () => {
                                 </View>
                                 <View className="flex-1">
                                     <View className="flex flex-row items-center justify-between mb-1">
-                                        <Text className="text-lg font-[ebold] text-red-700">Apple Health</Text>
+                                        <Text className="text-lg font-[ebold] text-red-700">{t('appleHealth')}</Text>
                                         <Text className="font-[medium] text-sm text-gray-400">{dayjs().format('HH:mm')}</Text>
                                     </View>
                                     <View className="flex flex-row items-center justify-between mt-1">
                                         <View className="flex flex-row items-center gap-1.5">
                                             <Text className="font-[esemibold] text-gray-600 text-base">{dailyDetail.appleStep}</Text>
-                                            <Text className="font-[medium] text-gray-400 text-sm mt-0.5">Steps</Text>
+                                            <Text className="font-[medium] text-gray-400 text-sm mt-0.5">{t('steps')}</Text>
                                         </View>
                                         <View className="flex flex-row items-center gap-1.5">
                                             <Text className="font-[esemibold] text-orange-500 text-base">{dailyDetail.appleBurned}</Text>
-                                            <Text className="font-[medium] text-gray-400 text-sm mt-0.5">kcal</Text>
+                                            <Text className="font-[medium] text-gray-400 text-sm mt-0.5">{t('kcalLabel')}</Text>
                                         </View>
                                     </View>
                                 </View>
@@ -778,7 +816,7 @@ const Dashboard = () => {
                                         <View className="flex flex-row gap-1.5 items-center">
                                             <Image source={require("../../../assets/images/running.png")} style={{ width: 24, height: 24 }} resizeMode="contain" />
                                             <Text className={`font-[ebold] text-base ${item.quantity <= 0 ? 'line-through text-gray-300' : 'text-emerald-500'}`}></Text>
-                                            <Text className="font-[medium] ml-[-10px] text-emerald-500 text-xl">{item.caloriesBurned} Kcal</Text>
+                                            <Text className="font-[medium] ml-[-10px] text-emerald-500 text-xl">{item.caloriesBurned} {t('kcalLabel')}</Text>
                                         </View>
                                     </View>
                                 </TouchableOpacity>
@@ -824,7 +862,7 @@ const Dashboard = () => {
                                         <View className="flex flex-row gap-1.5 items-center mb-1">
                                             <Image source={require("../../../assets/images/fire.png")} style={{ width: 16, height: 16 }} resizeMode="contain" />
                                             <Text className={`font-[ebold] text-lg ${item.quantity <= 0 ? 'line-through text-gray-300' : 'text-orange-500'}`}>
-                                                {item.calories} <Text className="font-[medium]">Kcal</Text>
+                                                {item.calories} <Text className="font-[medium]">{t('kcalLabel')}</Text>
                                             </Text>
                                         </View>
 

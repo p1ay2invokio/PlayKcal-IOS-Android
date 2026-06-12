@@ -4,16 +4,21 @@ import { Text, TouchableOpacity, View } from "react-native"
 import Animated from "react-native-reanimated"
 import { SafeAreaView } from "react-native-safe-area-context"
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useLanguageStore } from "@/stores/language.store"
 
 
 const Sex = () => {
 
     let { setSex, nextPage, current, setCurrent } = useMeasureStore()
+    const { t, locale } = useLanguageStore()
 
     let navigate = useRouter()
 
+    const capitalizedMale = t('male').charAt(0).toUpperCase() + t('male').slice(1)
+    const capitalizedFemale = t('female').charAt(0).toUpperCase() + t('female').slice(1)
+
     return (
-        <View className="flex-1 justify-center items-center bg-white px-6">
+        <View className="flex-1 justify-center items-center bg-white px-6" key={locale}>
 
             {/* ปุ่ม Back ทำเป็นปุ่มวงกลมสวยๆ */}
             <TouchableOpacity
@@ -26,10 +31,10 @@ const Sex = () => {
             {/* Header Section */}
             <View className="items-center mb-12 mt-[-40px]">
                 <Text className="font-[ebold] text-3xl text-gray-800 mb-3 text-center">
-                    What's your gender?
+                    {t('whatsYourGender')}
                 </Text>
                 <Text className="font-[emedium] text-base text-gray-500 text-center px-4">
-                    This helps us calculate your daily calorie needs accurately.
+                    {t('genderDesc')}
                 </Text>
             </View>
 
@@ -50,7 +55,7 @@ const Sex = () => {
                         <View className="w-16 h-16 bg-blue-100 rounded-full flex justify-center items-center mb-4">
                             <Ionicons name="male" size={32} color="#3B82F6" />
                         </View>
-                        <Text className="font-[ebold] text-blue-600 text-xl tracking-wide">Male</Text>
+                        <Text className="font-[ebold] text-blue-600 text-xl tracking-wide">{capitalizedMale}</Text>
                     </TouchableOpacity>
                 </Animated.View>
 
@@ -68,7 +73,7 @@ const Sex = () => {
                         <View className="w-16 h-16 bg-pink-100 rounded-full flex justify-center items-center mb-4">
                             <Ionicons name="female" size={32} color="#EC4899" />
                         </View>
-                        <Text className="font-[ebold] text-pink-500 text-xl tracking-wide">Female</Text>
+                        <Text className="font-[ebold] text-pink-500 text-xl tracking-wide">{capitalizedFemale}</Text>
                     </TouchableOpacity>
                 </Animated.View>
 

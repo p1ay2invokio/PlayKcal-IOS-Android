@@ -4,22 +4,23 @@ import { View, Text, TouchableOpacity } from 'react-native'
 import Slider from '@react-native-community/slider'
 import { useFocusEffect } from 'expo-router'
 import { User } from '@/class/user.class'
+import { useLanguageStore } from '@/stores/language.store'
 
 const ZONES = [
-    { max: 18.5, label: 'ผอมเกินไป', range: '< 18.5', color: '#185FA5', bg: '#E6F1FB' },
-    { max: 23, label: 'น้ำหนักปกติ', range: '18.5–22.9', color: '#3B6D11', bg: '#EAF3DE' },
-    { max: 25, label: 'น้ำหนักเกิน (ท้วม)', range: '23–24.9', color: '#854F0B', bg: '#FAEEDA' },
-    { max: 30, label: 'อ้วน', range: '25–29.9', color: '#854F0B', bg: '#FFF3E0' },
-    { max: 99, label: 'อ้วนมาก', range: '≥ 30', color: '#A32D2D', bg: '#FCEBEB' },
-]
+    { max: 18.5, key: 'underweight', range: '< 18.5', color: '#185FA5', bg: '#E6F1FB' },
+    { max: 23, key: 'normalWeight', range: '18.5–22.9', color: '#3B6D11', bg: '#EAF3DE' },
+    { max: 25, key: 'overweight', range: '23–24.9', color: '#854F0B', bg: '#FAEEDA' },
+    { max: 30, key: 'obese', range: '25–29.9', color: '#854F0B', bg: '#FFF3E0' },
+    { max: 99, key: 'extremelyObese', range: '≥ 30', color: '#A32D2D', bg: '#FCEBEB' },
+] as const;
 
 const SEGMENTS = [
-    { from: 10, to: 18.5, color: '#85B7EB', label: 'ผอม' },
-    { from: 18.5, to: 23, color: '#97C459', label: 'ปกติ' },
-    { from: 23, to: 25, color: '#FAC775', label: 'ท้วม' },
-    { from: 25, to: 30, color: '#EF9F27', label: 'อ้วน' },
-    { from: 30, to: 45, color: '#F09595', label: 'อ้วนมาก' },
-]
+    { from: 10, to: 18.5, color: '#85B7EB', key: 'thin' },
+    { from: 18.5, to: 23, color: '#97C459', key: 'normal' },
+    { from: 23, to: 25, color: '#FAC775', key: 'chubby' },
+    { from: 25, to: 30, color: '#EF9F27', key: 'obese' },
+    { from: 30, to: 45, color: '#F09595', key: 'extremelyObese' },
+] as const;
 
 const MIN = 10
 const MAX = 45
@@ -34,20 +35,15 @@ function bmiToPercent(bmi: number) {
 
 export default function BMITimeline() {
     const [bmi, setBmi] = useState(0)
+    const { t, locale } = useLanguageStore()
     const zone = getZone(bmi)
     const markerPercent = bmiToPercent(bmi)
 
     useFocusEffect(useCallback(() => {
         (async () => {
             let u = new User()
-
-
             let res = await u.getUserData()
-
-
             const bmi = res.weight / ((res.height / 100) ** 2)
-
-            console.log(res)
             setBmi(bmi)
         })()
     }, []))
@@ -58,7 +54,6 @@ export default function BMITimeline() {
 
     return (
         <View className="flex-1 bg-white px-5 pt-10 rounded-2xl border-gray-200">
-
             {/* Status Card */}
             <View
                 className="rounded-2xl mb-4 flex-row items-center"
@@ -79,10 +74,10 @@ export default function BMITimeline() {
                 {/* Status */}
                 <View className="flex-1 items-center">
                     <Text className="text-xs text-gray-400 font-[emedium] uppercase" style={{ marginBottom: 4, letterSpacing: 1 }}>
-                        Status
+                        {t('statusLabel')}
                     </Text>
                     <Text className="text-base font-[ebold]" style={{ color: zone.color }}>
-                        {zone.label}
+                        {t(zone.key as any)}
                     </Text>
                     <Text className="text-xs text-gray-400 font-[emedium]" style={{ marginTop: 2 }}>
                         {zone.range}
@@ -97,12 +92,12 @@ export default function BMITimeline() {
                         const width = ((seg.to - seg.from) / (MAX - MIN)) * 100
                         return (
                             <View
-                                key={seg.label}
+                                key={seg.key}
                                 style={{ width: `${width}%`, backgroundColor: seg.color }}
                                 className="h-full justify-center items-center"
                             >
                                 <Text style={{ fontSize: 9, color: 'white', fontFamily: 'ebold' }}>
-                                    {seg.label}
+                                    {t(seg.key as any)}
                                 </Text>
                             </View>
                         )

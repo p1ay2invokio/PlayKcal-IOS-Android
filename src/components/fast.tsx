@@ -4,13 +4,15 @@ import Animated from "react-native-reanimated"
 import { useMeasureStore } from "@/stores/measure.store"
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Link } from "expo-router";
+import { useLanguageStore } from "@/stores/language.store";
 
 const Fast = () => {
 
     let { nextPage, fast, setFast, setCurrent, current } = useMeasureStore()
+    const { t, locale } = useLanguageStore()
 
     return (
-        <View className="flex-1 bg-white px-6">
+        <View className="flex-1 bg-white px-6" key={locale}>
 
             {/* ปุ่ม Back (สไตล์วงกลมแบบเดียวกับหน้าก่อนๆ) */}
             <TouchableOpacity
@@ -23,10 +25,10 @@ const Fast = () => {
             {/* Header Section */}
             <View className="items-center mt-36 mb-6">
                 <Text className="font-[ebold] text-3xl text-gray-800 mb-3 text-center">
-                    Calorie Deficit
+                    {t('deficitTitle')}
                 </Text>
                 <Text className="font-[emedium] text-base text-gray-500 text-center px-4 leading-relaxed">
-                    A higher deficit yields faster results, but a moderate deficit is more sustainable.
+                    {t('deficitDesc')}
                 </Text>
             </View>
 
@@ -37,7 +39,7 @@ const Fast = () => {
                     {/* ตัวเลข Kcal ใหญ่ๆ */}
                     <View className="flex-row items-baseline mb-3">
                         <Text className="font-[ebold] text-6xl text-gray-900 tracking-tighter">{fast}</Text>
-                        <Text className="font-[ebold] text-xl text-gray-400 ml-2">kcal</Text>
+                        <Text className="font-[ebold] text-xl text-gray-400 ml-2">{t('kcal')}</Text>
                     </View>
 
                     {/* Badge แสดงน้ำหนักที่ลดได้ */}
@@ -49,7 +51,7 @@ const Fast = () => {
                                         fast >= 300 ? '0.27' :
                                             fast >= 200 ? '0.18' :
                                                 fast >= 100 ? '0.09' : '0'
-                            } kg / week
+                            } {t('kgPerWeek')}
                         </Text>
                     </View>
 
@@ -80,10 +82,9 @@ const Fast = () => {
 
                 {/* ข้อความอ้างอิงและคำเตือน */}
                 <Text className="font-[emedium] text-center text-xs text-gray-400 mb-5 px-2 leading-relaxed">
-                    Estimate based on Wishnofsky's Rule. Calculations are for educational purposes only.{"\n"}
-                    Sources: Wishnofsky M. (1958), Mayo Clinic.{' '}
+                    {t('wishnofskyDisclaimer')}{' '}
                     <Link style={{ color: '#3B82F6', fontWeight: 'bold' }} href="https://www.mayoclinic.org/healthy-lifestyle/weight-loss/in-depth/calories/art-20048065">
-                        Open Link
+                        {t('openLink')}
                     </Link>
                 </Text>
 
@@ -94,7 +95,7 @@ const Fast = () => {
                     className="w-full rounded-[24px] bg-gray-900 py-4 items-center flex justify-center shadow-md shadow-gray-400/30"
                 >
                     <Text className="font-[ebold] text-white text-xl tracking-wide">
-                        Start the journey
+                        {t('startJourney')}
                     </Text>
                 </TouchableOpacity>
 
